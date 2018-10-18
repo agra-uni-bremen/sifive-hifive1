@@ -7,7 +7,7 @@
 
 static const char led_msg[] = "\a\n\r\n\r\
 55555555555555555555555555555555555555555555555\n\r\
-55555 Are able to press Buttons? [y/n]  5555555\n\r\
+555555 Are able to press Buttons? [y/n]  555555\n\r\
 55555555555555555555555555555555555555555555555\n\r";
 
 static const char sifive_msg[] = "\n\r\
@@ -60,33 +60,90 @@ static void _puts(const char * s) {
   }
 }
 
+static uint32_t mapPinToReg(uint8_t pin)
+{
+	if(pin < 8)
+	{
+		return pin + PIN_0_OFFSET;
+	}
+	if(pin < 20)
+	{
+		return pin - 8;
+	}
+	return 0;	//also ignoring non-wired pin 14 <==> 8
+}
+
+static void setPinOutput(uint8_t pin)
+{
+	GPIO_REG(GPIO_INPUT_EN) &= ~(1 << mapPinToReg(pin));
+	GPIO_REG(GPIO_OUTPUT_EN) |= 1 << mapPinToReg(pin);
+	GPIO_REG(GPIO_OUTPUT_VAL) &= ~(1 << mapPinToReg(pin));
+}
+
+static void setPin(volatile uint32_t* reg, uint8_t pin, uint8_t val)
+{
+	if(val)
+	{
+		*reg |= 1 << mapPinToReg(pin);
+	}
+	else
+	{
+		*reg &= ~(1 << mapPinToReg(pin));
+	}
+}
+
 static uint16_t segmentMapping[10] =
 {
-		0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B
+		//abcdefg
+		//0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B
+		//gfedcba
+		0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F
 };
 
-static void displayNumber(uint8_t number, uint8_t dot)
-{
-	uint32_t reg = GPIO_REG(GPIO_OUTPUT_VAL) & ~(0xFF << 2);	//2 is pin offset, hardcoded
-
-	if(number < 10)
-		reg |= segmentMapping[number] << 2;
-	else
-		reg |= 0x01000000 << 2;
-
-	if(dot)
-		reg |= 0x10000000 << 2;
-
-	GPIO_REG(GPIO_OUTPUT_VAL) |= reg;
-}
 
 static void sleep(uint32_t millis)
 {
     volatile uint64_t *  now = (volatile uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIME);
-    volatile uint64_t then = *now + millis;
+    volatile uint64_t then = *now + millis*(RTC_FREQ / 1000);
     while (*now < then) { }
 }
 
+static bitprint(uint32_t val)
+{
+	for(uint8_t i = 0; i < 32; i++)
+	{
+		_putc(val & (1 << i) ? '1' : '0');
+	}
+	_putc('\n');
+}
+
+static printGPIOs()
+{
+	//bitprint(GPIO_REG(GPIO_INPUT_EN));
+	//_puts("Output ENABLE ");
+	//bitprint(GPIO_REG(GPIO_OUTPUT_EN));
+	_puts("Output  VALUE ");
+	bitprint(GPIO_REG(GPIO_OUTPUT_VAL));
+}
+
+static void displayNumber(uint8_t number, uint8_t dot)
+{
+	uint32_t reg = GPIO_REG(GPIO_OUTPUT_VAL) & ~(0xFF << PIN_0_OFFSET);
+	if(number < 10)
+	{
+		for(uint8_t i = 0; i < 8; i++)
+		{
+			setPin(&reg, 2 + i, segmentMapping[number] & (1 << i));
+		}
+	}
+	else
+		reg |= 1 << 7;
+
+	if(dot)
+		setPin(&reg, 9, 1);
+
+	GPIO_REG(GPIO_OUTPUT_VAL) = reg;
+}
 
 int main (void){
 
@@ -130,17 +187,39 @@ int main (void){
 
 	for(uint8_t i = 2; i <= 9; i++)
 	{
-	  GPIO_REG(GPIO_INPUT_EN)  &= ~(1 << i);
-	  GPIO_REG(GPIO_OUTPUT_EN) |=  1 << i;
+		setPinOutput(i);
 	}
 
+	//0123456789
+	//  abcdefg.
+	//0x11111111
+
+
+	uint8_t j = 0;
+	while(0)
+	{
+		_putc('a' + j);
+		_puts("\r\n");
+		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), 2 + j, 1);
+		while (_getc(&c) == 0){}
+		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), 2 + j, 0);
+		j = j+1 <= 8 ? j+1 : 0;
+	}
 
 	while(1)
 	{
 		displayNumber(counter%10, counter%20 > 9);
-		counter++;
+		_puts("Number: ");
+		_putc('0' + counter%10);
+		if(counter%20 > 9)
+		{
+			_putc('.');
+		}
+		_putc('\n');
+		printGPIOs();
 
-		sleep(500);
+		sleep(250);
+
 
 		// Check for user input
 		if (c == 0)
@@ -157,5 +236,6 @@ int main (void){
 				}
 			}
 		}
+		counter++;
 	}
 }
