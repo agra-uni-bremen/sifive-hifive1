@@ -102,6 +102,11 @@ static void setPin(volatile uint32_t* reg, uint8_t pin, uint8_t val)
 	}
 }
 
+static uint8_t getPin(uint8_t pin)
+{
+	return GPIO_REG(GPIO_INPUT_VAL) & (1 << mapPinToReg(pin));
+}
+
 static uint16_t segmentMapping[10] =
 {
 		//abcdefg
@@ -110,12 +115,21 @@ static uint16_t segmentMapping[10] =
 		0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F
 };
 
+volatile int direction = 1;
 
 static void sleep(uint32_t millis)
 {
     volatile uint64_t *  now = (volatile uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIME);
     volatile uint64_t then = *now + millis*(RTC_FREQ / 1000);
-    while (*now < then) { }
+    int prevDirection = direction;
+    while (*now < then)
+    {
+    	if(prevDirection == direction && !getPin(10))
+    	{
+    		direction = direction > 0 ? -1 : 1;
+    		while(!getPin(10)){};	//wow, even more active Waits :O
+    	}
+    }
 }
 
 static void bitprint(uint32_t val)
@@ -155,122 +169,6 @@ static void displayNumber(uint8_t number, uint8_t dot)
 		setPin(&reg, 9, 1);
 
 	GPIO_REG(GPIO_OUTPUT_VAL) = reg;
-}
-
-volatile int direction = 1;
-// Global Instance data for the PLIC
-// for use by the PLIC Driver.
-plic_instance_t g_plic;
-// Structures for registering different interrupt handlers
-// for different parts of the application.
-typedef void (*interrupt_function_ptr_t) (void);
-//array of function pointers which contains the PLIC
-//interrupt handlers
-interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
-
-void button_handler() {
-  _puts("In Button handler\n");
-
-  if(direction > 0)
-  {
-	  direction = -1;
-  }
-  else
-  {
-	  direction = 1;
-  }
-
-  //clear irq - interrupt pending register is write 1 to clear
-  GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
-}
-
-/*configures Button0 as a global gpio irq*/
-void b0_irq_init()  {
-
-    //disable hw io function
-    GPIO_REG(GPIO_IOF_EN )    &=  ~(1 << mapPinToReg(10));
-
-    //set to input
-    GPIO_REG(GPIO_INPUT_EN)   |= (1 << mapPinToReg(10));
-    GPIO_REG(GPIO_PULLUP_EN)  |= (1 << mapPinToReg(10));
-
-    //set to interrupt on falling edge
-    GPIO_REG(GPIO_FALL_IE)    |= (1 << mapPinToReg(10));
-
-    PLIC_init(&g_plic,
-  	    PLIC_CTRL_ADDR,
-  	    PLIC_NUM_INTERRUPTS,
-  	    PLIC_NUM_PRIORITIES);
-
-    PLIC_enable_interrupt (&g_plic, INT_GPIO_BASE + mapPinToReg(10));
-    PLIC_set_priority(&g_plic, INT_GPIO_BASE + mapPinToReg(10), 2);
-    g_ext_interrupt_handlers[INT_GPIO_BASE + mapPinToReg(10)] = button_handler;
-
-    _puts("Inited button\r\n");
-}
-
-/*Synchronous Trap Handler*/
-/*REQUIRED and called from bsp/env/ventry.s          */
-void handle_sync_trap(uint32_t arg0) {
-  uint32_t exception_code = read_csr(mcause);
-
-  //check for machine mode ecall
-  if(exception_code == CAUSE_MACHINE_ECALL)  {
-    //reset ecall_countdown
-    //ecall_countdown = 0;
-
-    //ecall argument is stored in a0 prior to
-    //ECALL instruction.
-    printf("ecall from M-mode: %d\n",arg0);
-
-    //on exceptions, mepc points to the instruction
-    //which triggered the exception, in order to
-    //return to the next instruction, increment
-    //mepc
-    unsigned long epc = read_csr(mepc);
-    epc += 4; //return to next instruction
-    write_csr(mepc, epc);
-
-  } else{
-    printf("vUnhandled Trap:\n");
-    //_exit(1 + read_csr(mcause));
-    while(1){};
-  }
-}
-
-/*Entry Point for PLIC Interrupt Handler*/
-/*REQUIRED and called from bsp/env/ventry.s          */
-void handle_m_external_interrupt(){
-	printf("In PLIC handler\n");
-	plic_source int_num  = PLIC_claim_interrupt(&g_plic);
-	if ((int_num >=1 ) && (int_num < PLIC_NUM_INTERRUPTS)) {
-		g_ext_interrupt_handlers[int_num]();
-	}
-	else {
-		//exit(1 + (uintptr_t) int_num);
-		_puts("unhandled Interrupt\r\n");
-		while(1){};
-	}
-	PLIC_complete_interrupt(&g_plic, int_num);
-}
-
-/*Entry Point for Machine Timer Interrupt Handler*/
-/*called from bsp/env/ventry.s          */
-void handle_m_time_interrupt(){
-  clear_csr(mie, MIP_MTIP);
-
-  //increment ecall_countdown
-  //ecall_countdown++;
-
-  //set_timer();
-  //re-enable button1 irq
-  //set_csr(mie, MIP_MLIP(LOCAL_INT_BTN_1));
-
-}
-
-//default empty PLIC handler
-void invalid_global_isr() {
-  printf("Unexpected global interrupt!\n");
 }
 
 int main (void){
@@ -317,21 +215,8 @@ int main (void){
 	{
 		setPinOutput(i);
 	}
-	//setup default global interrupt handler
-	for (int gisr = 0; gisr < PLIC_NUM_INTERRUPTS; gisr++){
-		g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS] = invalid_global_isr;
-	}
-	b0_irq_init();
 
-	// Set up machine timer interrupt.
-	//set_timer();
-
-	// Enable Global (PLIC) interrupts.
-	set_csr(mie, MIP_MEIP);
-
-	// Enable all interrupts
-	set_csr(mstatus, MSTATUS_MIE);
-
+	setPinInput(10);
 
 	//0123456789
 	//  abcdefg.
