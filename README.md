@@ -54,3 +54,11 @@ In case screen does not work use (this may happen when running screen a second t
 
 Press the reset button on the board to restart (and thus see output).
 NOTE: /dev/ttyUSB0 is the debug interface.
+
+
+======================================================================================
+
+Disable compressed instructions:
+
+	In *sifive--hifive1/freedom-e-sdk/bsp/env/freedom-e300-hifive1/* open *setting.mk* and set *RISCV_ARCH := rv32ima* (set to rv32imac to re-enable)
+
