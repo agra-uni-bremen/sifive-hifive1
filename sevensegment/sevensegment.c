@@ -39,7 +39,7 @@ static const char sifive_msg[] = "\n\r\
                    55555\n\r\
                      5\n\r\
 \n\r\
-               'led_fade' Demo \n\r\
+               'sevensegment' Demo \n\r\
 \n\r";
 
 static void _putc(char c) {
@@ -102,6 +102,11 @@ static void setPin(volatile uint32_t* reg, uint8_t pin, uint8_t val)
 	}
 }
 
+static uint8_t getPin(uint8_t pin)
+{
+	return GPIO_REG(GPIO_INPUT_VAL) & (1 << mapPinToReg(pin));
+}
+
 static uint16_t segmentMapping[10] =
 {
 		//abcdefg
@@ -110,12 +115,11 @@ static uint16_t segmentMapping[10] =
 		0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F
 };
 
-
 static void sleep(uint32_t millis)
 {
     volatile uint64_t *  now = (volatile uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIME);
     volatile uint64_t then = *now + millis*(RTC_FREQ / 1000);
-    while (*now < then) { }
+    while (*now < then){}
 }
 
 static void bitprint(uint32_t val)
@@ -158,6 +162,8 @@ static void displayNumber(uint8_t number, uint8_t dot)
 }
 
 volatile int direction = 1;
+volatile uint8_t directionChangePending = 0;
+
 // Global Instance data for the PLIC
 // for use by the PLIC Driver.
 plic_instance_t g_plic;
@@ -170,19 +176,23 @@ typedef void (*interrupt_function_ptr_t) (void);
 interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
 
 void button_handler() {
-  _puts("In Button handler\n");
+	_puts("In Button handler\n");
 
-  if(direction > 0)
-  {
-	  direction = -1;
-  }
-  else
-  {
-	  direction = 1;
-  }
-
-  //clear irq - interrupt pending register is write 1 to clear
-  GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
+	//only change when pressing down, small debounce
+	if(!directionChangePending)
+	{
+		if(direction > 0)
+		{
+			direction = -1;
+		}
+		else
+		{
+			direction = 1;
+		}
+		directionChangePending = 1;
+	}
+	//clear irq - interrupt pending register is write 1 to clear
+	GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
 }
 
 /*configures Button0 as a global gpio irq*/
@@ -284,6 +294,7 @@ int main (void)
 	{
 		setPinOutput(i);
 	}
+
 	//setup default global interrupt handler
 	for (int gisr = 0; gisr < PLIC_NUM_INTERRUPTS; gisr++){
 		g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS] = invalid_global_isr;
@@ -298,7 +309,6 @@ int main (void)
 
 	// Enable all interrupts
 	set_csr(mstatus, MSTATUS_MIE);
-
 
 	//0123456789
 	//  abcdefg.
@@ -324,7 +334,7 @@ int main (void)
 		//printGPIOs();
 
 		sleep(250);
-
+		directionChangePending = 0;
 
 		// Check for user input
 		if (c == 0)

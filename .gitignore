@@ -1,0 +1,7 @@
+.cproject
+.project
+.settings/
+.unsupported-boards
+*.a
+*.o
+
