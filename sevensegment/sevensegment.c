@@ -39,7 +39,7 @@ static const char sifive_msg[] = "\n\r\
                    55555\n\r\
                      5\n\r\
 \n\r\
-               'led_fade' Demo \n\r\
+               'sevensegment' Demo \n\r\
 \n\r";
 
 static void _putc(char c) {
