@@ -124,7 +124,7 @@ static void bitprint(uint32_t val)
 	{
 		_putc(val & (1 << i) ? '1' : '0');
 	}
-	_putc('\r\n');
+	_puts("\r\n");
 }
 
 static void printGPIOs()
@@ -164,6 +164,7 @@ plic_instance_t g_plic;
 // Structures for registering different interrupt handlers
 // for different parts of the application.
 typedef void (*interrupt_function_ptr_t) (void);
+
 //array of function pointers which contains the PLIC
 //interrupt handlers
 interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
@@ -212,97 +213,63 @@ void b0_irq_init()  {
 /*Synchronous Trap Handler*/
 /*REQUIRED and called from bsp/env/ventry.s          */
 void handle_sync_trap(uint32_t arg0) {
-  uint32_t exception_code = read_csr(mcause);
+	uint32_t exception_code = read_csr(mcause);
 
-  //check for machine mode ecall
-  if(exception_code == CAUSE_MACHINE_ECALL)  {
-    //reset ecall_countdown
-    //ecall_countdown = 0;
+	//check for machine mode ecall
+	if(exception_code == CAUSE_MACHINE_ECALL)
+	{
+		//reset ecall_countdown
+		//ecall_countdown = 0;
 
-    //ecall argument is stored in a0 prior to
-    //ECALL instruction.
-    printf("ecall from M-mode: %d\n",arg0);
+		//ecall argument is stored in a0 prior to
+		//ECALL instruction.
+		printf("ecall from M-mode: %d\n",arg0);
 
-    //on exceptions, mepc points to the instruction
-    //which triggered the exception, in order to
-    //return to the next instruction, increment
-    //mepc
-    unsigned long epc = read_csr(mepc);
-    epc += 4; //return to next instruction
-    write_csr(mepc, epc);
+		//on exceptions, mepc points to the instruction
+		//which triggered the exception, in order to
+		//return to the next instruction, increment
+		//mepc
+		unsigned long epc = read_csr(mepc);
+		epc += 4; //return to next instruction
+		write_csr(mepc, epc);
 
-  } else{
-    printf("vUnhandled Trap:\n");
-    //_exit(1 + read_csr(mcause));
-    while(1){};
-  }
+	}
+	else
+	{
+		printf("vUnhandled Trap:\n");
+		//_exit(1 + read_csr(mcause));
+		while(1){};
+	}
 }
 
 /*Entry Point for PLIC Interrupt Handler*/
-/*REQUIRED and called from bsp/env/ventry.s          */
-void handle_m_external_interrupt(){
-	printf("In PLIC handler\n");
+void handle_m_ext_interrupt(){
+	printf("In PLIC handler\r\n");
 	plic_source int_num  = PLIC_claim_interrupt(&g_plic);
 	if ((int_num >=1 ) && (int_num < PLIC_NUM_INTERRUPTS)) {
 		g_ext_interrupt_handlers[int_num]();
 	}
 	else {
-		//exit(1 + (uintptr_t) int_num);
+		//exit(1 + (uintptr_t) int_num);Unexpected
 		_puts("unhandled Interrupt\r\n");
 		while(1){};
 	}
 	PLIC_complete_interrupt(&g_plic, int_num);
 }
 
-/*Entry Point for Machine Timer Interrupt Handler*/
-/*called from bsp/env/ventry.s          */
-void handle_m_time_interrupt(){
-  clear_csr(mie, MIP_MTIP);
-
-  //increment ecall_countdown
-  //ecall_countdown++;
-
-  //set_timer();
-  //re-enable button1 irq
-  //set_csr(mie, MIP_MLIP(LOCAL_INT_BTN_1));
-
-}
 
 //default empty PLIC handler
-void invalid_global_isr() {
-  printf("Unexpected global interrupt!\n");
+void invalid_global_isr()
+{
+	printf("Unexpected global interrupt!\r\n");
+}
+//default empty local handler
+void invalid_local_isr() {
+  printf ("Unexpected local interrupt!\n");
 }
 
-int main (void){
-
-	// Make sure the HFROSC is on before the next line:
-	PRCI_REG(PRCI_HFROSCCFG) |= ROSC_EN(1);
-	// Run off 16 MHz Crystal for accuracy. Note that the
-	// first line is
-	PRCI_REG(PRCI_PLLCFG) = (PLL_REFSEL(1) | PLL_BYPASS(1));
-	PRCI_REG(PRCI_PLLCFG) |= (PLL_SEL(1));
-	// Turn off HFROSC to save power
-	PRCI_REG(PRCI_HFROSCCFG) &= ~(ROSC_EN(1));
-
-	// Configure UART to print
-	GPIO_REG(GPIO_OUTPUT_VAL) |= IOF0_UART0_MASK;
-	GPIO_REG(GPIO_OUTPUT_EN)  |= IOF0_UART0_MASK;
-	GPIO_REG(GPIO_IOF_SEL)    &= ~IOF0_UART0_MASK;
-	GPIO_REG(GPIO_IOF_EN)     |= IOF0_UART0_MASK;
-
-	// 115200 Baud Rate
-	UART0_REG(UART_REG_DIV) = 138;
-	UART0_REG(UART_REG_TXCTRL) = UART_TXEN;
-	UART0_REG(UART_REG_RXCTRL) = UART_RXEN;
-
-	// Wait a bit to avoid corruption on the UART.
-	// (In some cases, switching to the IOF can lead
-	// to output glitches, so need to let the UART
-	// reciever time out and resynchronize to the real
-	// start of the stream.
-	volatile int i=0;
-	while(i < 5000){i++;}
-
+int main (void)
+{
 	_puts(sifive_msg);
 	_puts("Config String:\n\r");
 	_puts(*((const char **) 0x100C));
@@ -353,12 +320,8 @@ int main (void){
 		displayNumber(counter%10, direction != 1);
 		_puts("Number: ");
 		_putc('0' + counter%10);
-		if(counter%20 > 9)
-		{
-			_putc('.');
-		}
 		_puts("\r\n");
-		printGPIOs();
+		//printGPIOs();
 
 		sleep(250);
 
