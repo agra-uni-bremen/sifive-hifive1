@@ -1,0 +1,129 @@
+%% Beamer DFKI slides theme
+%%
+%% $Id: beamerthemeDFKI.sty 429 2018-01-11 12:49:11Z cxl $
+%%
+%% (C) DFKI. For our very generous licensing terms, enqire within.
+
+\ProvidesPackage{beamerthemeDFKI}[2015/09/23 v0.2 DFKI CPS Beamer theme]
+
+\mode<presentation>
+
+%% Options
+\newif\if@faded
+\@fadedtrue
+
+%% Option "plain" removes some of the faded lines
+\DeclareOptionBeamer{plain}{\@fadedfalse}
+\ProcessOptionsBeamer
+
+%% DFKI colour theme
+\RequirePackage{dfkicolors}
+\selectcolormodel{RGB}
+
+%% Specific beamer colour setup
+\setbeamercolor{block title}{bg=black!15}
+\setbeamercolor{block title alerted}{use=alerted text,fg=alerted text.fg,bg=alerted text.fg!5!bg}
+\setbeamercolor{block title example}{use=example text,fg=black!0, bg=black!15}
+
+\setbeamercolor{block body}{parent=normal text,use=block title,bg=black!5}
+\setbeamercolor{block body alerted}{parent=normal text,use=block title alerted,bg=block title alerted.bg!5!bg}
+\setbeamercolor{block body example}{parent=normal text,use=block title example,bg=block title example.bg!5!bg}
+
+\setbeamercolor{title}{use=structure,fg=white,bg=structure.fg}
+\setbeamerfont{block title}{size={}}
+
+
+%% Beamer paper size used to 128mm by 96mm, but can now be changed e.g. by 
+%% aspectratio option to  produce wide slides, so we should be flexible here.
+
+%% Redefine various margin sizes 
+\setbeamersize{text margin left=5mm}
+\setbeamersize{text margin right=5mm}
+\setlength\leftmargini{1em}
+\setlength\leftmarginii{1em}
+\setlength\leftmarginiii{1em}
+
+%% Images and shadings
+% \pgfdeclareimage[height=1cm]{biglogo}{beamer/img/DFKI-CPS}
+% \titlegraphic{\pgfuseimage{biglogo}}
+\pgfdeclareimage[height=5mm]{headerlogo}{images/DFKI}
+\pgfdeclarehorizontalshading{dfki-shade-r2l}{.5ex}%
+    {rgb(0cm)=(1,1,1); rgb(\paperwidth)=(0.133,0.395,0.725)}
+
+
+%% Inner theme: itemize stuff
+\useinnertheme{circles}
+%% Ugly inner theme (pptx compatibility)
+\setbeamercolor{item}{fg=darkred}
+\setbeamercolor{item projected}{fg=darkred} %% follows from above??
+\setbeamercolor{subitem}{fg=darkblue}
+\setbeamertemplate{itemize subitem}[square] 
+%% Nicer (but not pptx lookalike)
+% \setbeamercolor{item}{fg=darkblue}
+% \setbeamercolor{subitem}{fg=lightblue}
+
+\setbeamercolor{alerted text}{fg=darkred}
+\setbeamerfont{alerted text}{series=\bfseries}
+
+%% Frame titles flushed to the left, in dark blue and bold
+\setbeamertemplate{frametitle}[default][left]
+\setbeamercolor{frametitle}{fg=darkblue}
+\setbeamerfont{frametitle}{series=\bfseries}
+
+%% Header: Logo at the right, silly fading line beneath
+\setbeamertemplate{headline}
+  {% We create a box of height 0 to draw in the frame title area
+  \begin{pgfpicture} {0mm}{0mm}{\paperwidth}{0mm}%
+\if@faded
+    \pgftext[at=\pgfpoint{0mm}{-11mm},left,bottom]{\pgfuseshading{dfki-shade-r2l}}
+\fi
+    \pgftext[at=\pgfpoint{\paperwidth-5mm}{-8mm},right,bottom]{\pgfuseimage{headerlogo}}
+  \end{pgfpicture}%
+  }
+
+%% Footer: gray with University of Bremen logo
+\setbeamertemplate{footline}
+{ \begin{tikzpicture}
+    \fill[unigray] (0,0) |- ++(.8\paperwidth,8mm) |- ++(.2\paperwidth,-3mm) |- (0,0);
+    \node[anchor=east] at (\paperwidth-2mm,.2cm) {\color{black}{\insertframenumber}};
+    \node[anchor=west] at (2mm,4mm) {\includegraphics[height=4mm]{images/uni-logo.pdf}};
+  \end{tikzpicture}
+}
+
+\def\@subtitle{SUBTITLE}
+
+% Turn off the navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+
+%% Title slide
+%% Font in dark blue and bold
+% \setbeamercolor{title page}{fg=darkblue}
+% \setbeamerfont{title page}{series=\bfseries}
+\setbeamertemplate{title page}{
+\vspace*{6mm}
+\begin{tabular}{@{}p{.9\textwidth}}
+\color{darkblue}{\Large\bfseries \inserttitle} \\
+\color{darkblue}{\bfseries\insertsubtitle}
+\end{tabular}
+\vspace*{\stretch{1}}\begin{columns}[T]
+  \column{.5\textwidth}
+  \insertauthor \\[2ex]
+%%  {\small\insertinstitute}
+  {\small %
+    Deutsches Forschungsinstitut\\
+    f\"ur K\"unstliche Intelligenz\\[.5ex]
+    Cyber-Physical Systems}
+  \column{.45\textwidth}
+  \hfill\includegraphics[height=35mm]{images/title-picture}
+\end{columns}
+}
+
+\if@faded
+\renewcommand{\maketitle}{\frame{\titlepage}}
+\else
+\renewcommand{\maketitle}{\frame[plain]{\titlepage}}
+\fi
+
+\mode
+<all>
