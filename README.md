@@ -58,7 +58,13 @@ ZEPHYR OS
 =========
 
 To use Zephyr, see zephyr/RREADME.rst. (Install OS Packages, pip packages)
-To build for HiFive1, use example zephyrrc file, modify for your paths, rename to ~/.zephyrrc and source it. Then call zephyr-env.sh. Then build your project.
+To build for HiFive1, use example zephyrrc file, modify for your paths, rename to ~/.zephyrrc and source it(?). Source zephyr-env.sh. Then build your project:
+
+```bash
+mkdir build && cmake .. -DBOARD=$BOARD
+make -j6
+```
+
 
 Uploading Zephyr-Elfs to board
 ------------------------------
@@ -72,7 +78,22 @@ $ riscv32-unknown-elf-gdb
  target extended-remote localhost:3333
  monitor reset halt
  monitor flash protect 0 64 last off
- load samples/hello_world/build/zephyr/zephyr.elf
+ load zephyr/zephyr.elf
  monitor resume
 ```
 
+Other Doc
+=========
+
+FreeRTOS medium example uses 14.7kiB out of 16kiB RAM (with 2k stack):
+
+	size RISCV_HiFive1_GCC.elf -d
+	   text	   data	    bss	    dec	    hex	filename
+	  17079	   1076	  13953	  32108	   7d6c	RISCV_HiFive1_GCC.elf
+
+Zephyr uses
+
+	Memory region         Used Size  Region Size  %age Used
+		         ROM:       22960 B        12 MB      0.18%
+		         RAM:        9440 B        16 KB     57.62%
+		    IDT_LIST:         553 B         2 KB     27.00%
