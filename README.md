@@ -3,17 +3,17 @@ How to build bare metal applications on HiFive1-Board
 
 1) Prerequisites on ubuntu (see *https://github.com/sifive/freedom-e-sdk*):
 
-	sudo apt-get install autoconf automake libmpc-dev libmpfr-dev libgmp-dev gawk bison flex texinfo libtool libusb-1.0-0-dev make g++ pkg-config libexpat1-dev zlib1g-dev
-
+	`sudo apt-get install autoconf automake libmpc-dev libmpfr-dev libgmp-dev gawk bison flex texinfo libtool libusb-1.0-0-dev make g++ pkg-config libexpat1-dev zlib1g-dev`
 
 2) Clone and update the *sifive--hifive1* repository:
 
+	```bash
 	git clone git@gitlab.informatik.uni-bremen.de:ppieper/sifive--hifive1.git
 	cd sifive--hifive1
 
 	cd freedom-e-sdk
 	git submodule update --init --recursive        # may take some time
-
+	```
 
 3) Download and unpack the pre-build *riscv-multilib* toolchain available from:
 
@@ -26,7 +26,7 @@ How to build bare metal applications on HiFive1-Board
 
 5) Build openocd (to load a program on the board) in *sifive--hifive1/freedom-e-sdk/*:
 
-	make openocd						# need only to be done once
+	`make openocd						# need only to be done once`
 
 
 6) Build and upload a program to the board:
@@ -38,11 +38,11 @@ How to build bare metal applications on HiFive1-Board
 
 7) Show program output:
 
-	sudo screen /dev/ttyUSB1 115200
+	`screen /dev/ttyUSB1 115200`
 
 In case screen does not work use (this may happen when running screen a second time):
 
-	sudo cat /dev/ttyUSB1	# NOTE: need to run screen once before this command works
+	`cat /dev/ttyUSB1	# NOTE: need to run screen once before this command works`
 
 Press the reset button on the board to restart (and thus see output).
 NOTE: /dev/ttyUSB0 is the debug interface.
@@ -51,7 +51,7 @@ NOTE: /dev/ttyUSB0 is the debug interface.
 Disable compressed instructions:
 --------------------------------
 
-	In *sifive--hifive1/freedom-e-sdk/bsp/env/freedom-e300-hifive1/* open *setting.mk* and set *RISCV_ARCH := rv32ima* (set to rv32imac to re-enable)
+In *sifive--hifive1/freedom-e-sdk/bsp/env/freedom-e300-hifive1/* open *setting.mk* and set *RISCV_ARCH := rv32ima* (set to rv32imac to re-enable)
 
 
 ZEPHYR OS
@@ -68,11 +68,11 @@ Basically the same procedure as freedom-e-sdk, but manual.
 ```bash
 $ ${SDK_PATH}/work/build/openocd/prefix/bin/openocd -f ${SDK_PATH}/bsp/env/freedom-e300-hifive1/openocd.cfg &
 $ riscv32-unknown-elf-gdb
-  set remotetimeout 240
-  target extended-remote localhost:3333
-  monitor reset halt
-  monitor flash protect 0 64 last off
-  load samples/hello_world/build/zephyr/zephyr.elf
-  monitor resume
+ set remotetimeout 240
+ target extended-remote localhost:3333
+ monitor reset halt
+ monitor flash protect 0 64 last off
+ load samples/hello_world/build/zephyr/zephyr.elf
+ monitor resume
 ```
 
