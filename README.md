@@ -20,20 +20,9 @@ How to build bare metal applications on HiFive1-Board
 	http://raws13/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
 
 
+4) make sure that the env variable RISCV_PATH is pointing to your toolchain-dir (without `/bin`)
 
-4) In *sifive--hifive1/freedom-e-sdk/Makefile* adapt the following paths to point to the above *riscv-multilib*:
-
-	"toolchain_srcdir := riscv-gnu-toolchain"
-	"toolchain_builddir := $(builddir)/riscv-gnu-toolchain/riscv64-unknown-elf"
-	"RISCV_PATH ?= $(toolchain_prefix)"
-
-==>> use your own local path of *riscv-multilib* ==>>
-
-	"toolchain_srcdir := /home/vladi/work/riscv/toolchain/latest-gnu-toolchain_riscv-multilib/"
-	"toolchain_builddir := /home/vladi/work/riscv/toolchain/latest-gnu-toolchain_riscv-multilib/"
-	"RISCV_PATH ?= /home/vladi/work/riscv/toolchain/latest-gnu-toolchain_riscv-multilib/"
-
-
+	example: `export RISCV_PATH="/opt/riscv"`
 
 5) Build openocd (to load a program on the board) in *sifive--hifive1/freedom-e-sdk/*:
 
@@ -42,10 +31,10 @@ How to build bare metal applications on HiFive1-Board
 
 6) Build and upload a program to the board:
 
-	make software PROGRAM=hello			# replace hello with other programs accordingly (e.g. *fade_led*, etc., see *software* folder)
-
-	sudo make upload PROGRAM=hello		# may not be necessary to use *sudo*, checkout the *sifive--hifive1/doc/hifive1-getting-started-v1.0.2.pdf* on additional details
-
+	```bash
+	make software PROGRAM=hello	BOARD=freedom-e300-hifive1		# replace hello with other programs accordingly (e.g. *fade_led*, etc., see *software* folder)
+	sudo make upload PROGRAM=hello		# may not be necessary to use _sudo_, see the *sifive--hifive1/doc/hifive1-getting-started-v1.0.2.pdf* on additional details
+	```
 
 7) Show program output:
 
