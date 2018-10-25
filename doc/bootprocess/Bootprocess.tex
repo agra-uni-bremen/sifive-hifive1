@@ -72,12 +72,12 @@
 		\begin{itemize}
 			\item User Program modifies system clock and "breaks" the execution
 			\item Debugger peripheral is also dependent on clock
-			\item[$\rightarrow$] Device cant be programmed\\(too little time between reset and execution of "malicious" user program)
+			\item[$\rightarrow$] Device can't be programmed\\(too little time between reset and execution of "malicious" user program)
 		\end{itemize}
 	\end{block}
 	\begin{block}{Solution}
 	\begin{itemize}
-		\item "bootloader" sets processor and clock to sane configuration every reset
+		\item "bootloader" gets executed first and checks for wakeup reason
 		\item If (manually) reset twice inside booloader, it stops execution (spinlock)
 		\item[$\rightarrow$] user can upload new (hopefully better) program via debugger
 	\end{itemize}
