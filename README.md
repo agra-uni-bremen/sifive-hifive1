@@ -85,13 +85,13 @@ $ riscv32-unknown-elf-gdb
 Other Doc
 =========
 
-FreeRTOS medium example uses 14.7kiB out of 16kiB RAM (with 2k stack):
+FreeRTOS example uses 14.7kiB out of 16kiB RAM (with 2k stack):
 
 	size RISCV_HiFive1_GCC.elf -d
 	   text	   data	    bss	    dec	    hex	filename
 	  17079	   1076	  13953	  32108	   7d6c	RISCV_HiFive1_GCC.elf
 
-Zephyr uses
+Zephyr uses with the philosophers demo:
 
 	Memory region         Used Size  Region Size  %age Used
 		         ROM:       22960 B        12 MB      0.18%
