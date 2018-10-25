@@ -1,3 +1,6 @@
+How to build bare metal applications on HiFive1-Board
+=====================================================
+
 1) Prerequisites on ubuntu (see *https://github.com/sifive/freedom-e-sdk*):
 
 	sudo apt-get install autoconf automake libmpc-dev libmpfr-dev libgmp-dev gawk bison flex texinfo libtool libusb-1.0-0-dev make g++ pkg-config libexpat1-dev zlib1g-dev
@@ -15,7 +18,7 @@
 3) Download and unpack the pre-build *riscv-multilib* toolchain available from:
 
 	http://raws13/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
-	
+
 
 
 4) In *sifive--hifive1/freedom-e-sdk/Makefile* adapt the following paths to point to the above *riscv-multilib*:
@@ -23,20 +26,20 @@
 	"toolchain_srcdir := riscv-gnu-toolchain"
 	"toolchain_builddir := $(builddir)/riscv-gnu-toolchain/riscv64-unknown-elf"
 	"RISCV_PATH ?= $(toolchain_prefix)"
-	
+
 ==>> use your own local path of *riscv-multilib* ==>>
 
 	"toolchain_srcdir := /home/vladi/work/riscv/toolchain/latest-gnu-toolchain_riscv-multilib/"
 	"toolchain_builddir := /home/vladi/work/riscv/toolchain/latest-gnu-toolchain_riscv-multilib/"
-	"RISCV_PATH ?= /home/vladi/work/riscv/toolchain/latest-gnu-toolchain_riscv-multilib/"	
+	"RISCV_PATH ?= /home/vladi/work/riscv/toolchain/latest-gnu-toolchain_riscv-multilib/"
 
 
 
 5) Build openocd (to load a program on the board) in *sifive--hifive1/freedom-e-sdk/*:
 
 	make openocd						# need only to be done once
-	
-	
+
+
 6) Build and upload a program to the board:
 
 	make software PROGRAM=hello			# replace hello with other programs accordingly (e.g. *fade_led*, etc., see *software* folder)
@@ -56,9 +59,31 @@ Press the reset button on the board to restart (and thus see output).
 NOTE: /dev/ttyUSB0 is the debug interface.
 
 
-======================================================================================
-
 Disable compressed instructions:
+--------------------------------
 
 	In *sifive--hifive1/freedom-e-sdk/bsp/env/freedom-e300-hifive1/* open *setting.mk* and set *RISCV_ARCH := rv32ima* (set to rv32imac to re-enable)
+
+
+ZEPHYR OS
+=========
+
+To use Zephyr, see zephyr/RREADME.rst. (Install OS Packages, pip packages)
+To build for HiFive1, use example zephyrrc file, modify for your paths, rename to ~/.zephyrrc and source it. Then call zephyr-env.sh. Then build your project.
+
+Uploading Zephyr-Elfs to board
+------------------------------
+
+Basically the same procedure as freedom-e-sdk, but manual.
+
+```bash
+$ ${SDK_PATH}/work/build/openocd/prefix/bin/openocd -f ${SDK_PATH}/bsp/env/freedom-e300-hifive1/openocd.cfg &
+$ riscv32-unknown-elf-gdb
+  set remotetimeout 240
+  target extended-remote localhost:3333
+  monitor reset halt
+  monitor flash protect 0 64 last off
+  load samples/hello_world/build/zephyr/zephyr.elf
+  monitor resume
+```
 
