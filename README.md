@@ -60,5 +60,5 @@ NOTE: /dev/ttyUSB0 is the debug interface.
 
 Disable compressed instructions:
 
-	In *sifive--hifive1/freedom-e-sdk/bsp/env/freedom-e300-hifive1/* open *setting.mk* and set *RISCV_ARCH := rv32ima* (set to rv32imac to re-enable)
+	In *sifive--hifive1/freedom-e-sdk/bsp/env/freedom-e300-hifive1/* open *setting.mk* and set *RISCV_ARCH := rv32im* (set to rv32imac to re-enable). NOTE: *RISCV_ARCH := rv32ima* might also be possible, however the RISC-V multilib toolchain seems to not support it for now!?
 
