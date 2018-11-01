@@ -126,7 +126,7 @@ static void bitprint(uint32_t val)
 {
 	for(uint8_t i = 0; i < 32; i++)
 	{
-		_putc(val & (1 << i) ? '1' : '0');
+		_putc(val & (1 << (32 - i)) ? '1' : '0');
 	}
 	_puts("\r\n");
 }
@@ -138,8 +138,8 @@ static void printGPIOs()
 	//bitprint(GPIO_REG(GPIO_OUTPUT_EN));
 	_puts("Output  VALUE ");
 	bitprint(GPIO_REG(GPIO_OUTPUT_VAL));
-	_puts("Input   VALUE ");
-	bitprint(GPIO_REG(GPIO_INPUT_VAL));
+	//_puts("Input   VALUE ");
+	//bitprint(GPIO_REG(GPIO_INPUT_VAL));
 }
 
 static void displayNumber(uint8_t number, uint8_t dot)
@@ -158,7 +158,10 @@ static void displayNumber(uint8_t number, uint8_t dot)
 	if(dot)
 		setPin(&reg, 9, 1);
 
+	_puts("New OUTPUT_VALUE: \n");
+	bitprint(reg);
 	GPIO_REG(GPIO_OUTPUT_VAL) = reg;
+	bitprint(reg);
 }
 
 volatile int direction = 1;
@@ -313,17 +316,6 @@ int main (void)
 	//0123456789
 	//  abcdefg.
 	//0x11111111
-
-	uint8_t j = 0;
-	while(0)
-	{
-		_putc('a' + j);
-		_puts("\r\n");
-		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), 2 + j, 1);
-		while (_getc(&c) == 0){}
-		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), 2 + j, 0);
-		j = j+1 <= 8 ? j+1 : 0;
-	}
 
 	while(1)
 	{
