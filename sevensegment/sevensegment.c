@@ -158,10 +158,9 @@ static void displayNumber(uint8_t number, uint8_t dot)
 	if(dot)
 		setPin(&reg, 9, 1);
 
-	_puts("New OUTPUT_VALUE: \n");
+	_puts("New OUTPUT_VALUE: \r\n");
 	bitprint(reg);
 	GPIO_REG(GPIO_OUTPUT_VAL) = reg;
-	bitprint(reg);
 }
 
 volatile int direction = 1;
@@ -323,7 +322,6 @@ int main (void)
 		_puts("Number: ");
 		_putc('0' + counter%10);
 		_puts("\r\n");
-		//printGPIOs();
 
 		sleep(250);
 		directionChangePending = 0;
