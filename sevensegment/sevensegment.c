@@ -158,8 +158,8 @@ static void displayNumber(uint8_t number, uint8_t dot)
 	if(dot)
 		setPin(&reg, 9, 1);
 
-	_puts("New OUTPUT_VALUE: \r\n");
-	bitprint(reg);
+	//_puts("New OUTPUT_VALUE: \r\n");
+	//bitprint(reg);
 	GPIO_REG(GPIO_OUTPUT_VAL) = reg;
 }
 
@@ -178,7 +178,7 @@ typedef void (*interrupt_function_ptr_t) (void);
 interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
 
 void button_handler() {
-	_puts("In Button handler\n");
+	_puts("In Button handler\r\n");
 
 	//only change when pressing down, small debounce
 	if(!directionChangePending)
@@ -195,6 +195,7 @@ void button_handler() {
 	}
 	//clear irq - interrupt pending register is write 1 to clear
 	GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
+	_puts("button handler done\r\n");
 }
 
 /*configures Button0 as a global gpio irq*/
@@ -226,7 +227,7 @@ void b0_irq_init()  {
 /*REQUIRED and called from bsp/env/ventry.s          */
 void handle_sync_trap(uint32_t arg0) {
 	uint32_t exception_code = read_csr(mcause);
-
+	printf("handling sync_trap %u\r\n", exception_code);
 	//check for machine mode ecall
 	if(exception_code == CAUSE_MACHINE_ECALL)
 	{
@@ -255,18 +256,21 @@ void handle_sync_trap(uint32_t arg0) {
 }
 
 /*Entry Point for PLIC Interrupt Handler*/
-void handle_m_ext_interrupt(){
-	printf("In PLIC handler\r\n");
+void handle_m_ext_interrupt()
+{
 	plic_source int_num  = PLIC_claim_interrupt(&g_plic);
-	if ((int_num >=1 ) && (int_num < PLIC_NUM_INTERRUPTS)) {
+	if ((int_num >=1 ) && (int_num < PLIC_NUM_INTERRUPTS))
+	{
 		g_ext_interrupt_handlers[int_num]();
 	}
-	else {
-		//exit(1 + (uintptr_t) int_num);Unexpected
-		_puts("unhandled Interrupt\r\n");
+	else
+	{
+		//exit(1 + (uintptr_t) int_num);
+		printf("unhandled Interrupt %u", int_num);
 		while(1){};
 	}
 	PLIC_complete_interrupt(&g_plic, int_num);
+	puts("completed interrupt\r\n");
 }
 
 
@@ -323,7 +327,7 @@ int main (void)
 		_putc('0' + counter%10);
 		_puts("\r\n");
 
-		sleep(250);
+		sleep(500);
 		directionChangePending = 0;
 
 		// Check for user input

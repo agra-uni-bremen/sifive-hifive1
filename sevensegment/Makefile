@@ -1,6 +1,6 @@
 TARGET = sevensegment
 C_SRCS += sevensegment.c
-CFLAGS += -O2 -fno-builtin-printf -DUSE_PLIC
+CFLAGS += -O1 -fno-builtin-printf -DUSE_PLIC
 
 BSP_BASE = ../../bsp
 
