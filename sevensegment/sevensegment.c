@@ -26,7 +26,7 @@ static const char sifive_msg[] = "\n\r\
    5555                             5555\n\r\
   5555         yeeeeeeeeeeee         5555\n\r\
  5555                                 5555\n\r\
-55555          9999999999999         55555\n\r\
+55555          9999999999999          55555\n\r\
  55555           555555555           55555\n\r\
    55555           55555           55555\n\r\
      55555           5           55555\n\r\
@@ -178,7 +178,7 @@ typedef void (*interrupt_function_ptr_t) (void);
 interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
 
 void button_handler() {
-	_puts("In Button handler\r\n");
+	//_puts("In Button handler\r\n");
 
 	//only change when pressing down, small debounce
 	if(!directionChangePending)
@@ -195,14 +195,14 @@ void button_handler() {
 	}
 	//clear irq - interrupt pending register is write 1 to clear
 	GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
-	_puts("button handler done\r\n");
+	_puts("button press handled\r\n");
 }
 
 /*configures Button0 as a global gpio irq*/
 void b0_irq_init()  {
 
     //disable hw io function
-    GPIO_REG(GPIO_IOF_EN )    &=  ~(1 << mapPinToReg(10));
+    GPIO_REG(GPIO_IOF_EN )    &= ~(1 << mapPinToReg(10));
 
     //set to input
     GPIO_REG(GPIO_INPUT_EN)   |= (1 << mapPinToReg(10));
@@ -227,7 +227,7 @@ void b0_irq_init()  {
 /*REQUIRED and called from bsp/env/ventry.s          */
 void handle_sync_trap(uint32_t arg0) {
 	uint32_t exception_code = read_csr(mcause);
-	printf("handling sync_trap %u\r\n", exception_code);
+	//printf("handling sync_trap %u\r\n", exception_code);
 	//check for machine mode ecall
 	if(exception_code == CAUSE_MACHINE_ECALL)
 	{
@@ -258,7 +258,7 @@ void handle_sync_trap(uint32_t arg0) {
 /*Entry Point for PLIC Interrupt Handler*/
 void handle_m_ext_interrupt()
 {
-	plic_source int_num  = PLIC_claim_interrupt(&g_plic);
+    plic_source int_num  = PLIC_claim_interrupt(&g_plic);
 	if ((int_num >=1 ) && (int_num < PLIC_NUM_INTERRUPTS))
 	{
 		g_ext_interrupt_handlers[int_num]();
@@ -270,7 +270,7 @@ void handle_m_ext_interrupt()
 		while(1){};
 	}
 	PLIC_complete_interrupt(&g_plic, int_num);
-	puts("completed interrupt\r\n");
+	//puts("completed interrupt\r\n");
 }
 
 
@@ -316,7 +316,6 @@ int main (void)
 	// Enable all interrupts
 	set_csr(mstatus, MSTATUS_MIE);
 
-	//0123456789
 	//  abcdefg.
 	//0x11111111
 
@@ -337,7 +336,6 @@ int main (void)
 			{
 				_putc(c);
 				_puts("\n\r");
-
 				if ((c == 'y') || (c == 'Y')){
 				  _puts("You pressed a button. Good job.\n\r");
 				} else{
