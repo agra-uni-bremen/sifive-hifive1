@@ -98,19 +98,16 @@ interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
 
 void button_handler() {
 	if(getPin(10))
-	{
-		//rise
-		//clear irq - interrupt pending register write 1 to clear
-		GPIO_REG(GPIO_RISE_IP) |= (1 << mapPinToReg(10));
+	{	//rise
 		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), RED_LED, 0);
 	}
 	else
-	{
-		//fall
-		//clear irq - interrupt pending register write 1 to clear
-		GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
+	{	//fall
 		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), RED_LED, 1);
 	}
+	//clear irq - interrupt pending register write 1 to clear
+	GPIO_REG(GPIO_RISE_IP) |= (1 << mapPinToReg(10));
+	GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
 
 	_puts("button handled\r\n");
 }
