@@ -186,7 +186,7 @@ int main (void)
 
 	//setup default global interrupt handler
 	for (int gisr = 0; gisr < PLIC_NUM_INTERRUPTS; gisr++){
-		g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS] = invalid_global_isr;
+		g_ext_interrupt_handlers[gisr] = invalid_global_isr;
 	}
 	b0_irq_init();
 
