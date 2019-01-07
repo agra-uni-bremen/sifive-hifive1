@@ -258,6 +258,9 @@ void handle_sync_trap(uint32_t arg0) {
 /*Entry Point for PLIC Interrupt Handler*/
 void handle_m_ext_interrupt()
 {
+	//register long t0 asm("t0") = 0x800;
+	//asm volatile ("csrc mip, t0" :: "r"(t0));
+
 	plic_source int_num  = PLIC_claim_interrupt(&g_plic);
 	if ((int_num >=1 ) && (int_num < PLIC_NUM_INTERRUPTS))
 	{
