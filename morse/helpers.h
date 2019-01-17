@@ -7,6 +7,8 @@ void _putc(char c);
 int _getc(char * c);
 void _puts(const char * s);
 
+uint32_t mapPinToReg(uint8_t pin);
+
 void setPinOutput(uint8_t pin);
 void setPinInput(uint8_t pin);
 

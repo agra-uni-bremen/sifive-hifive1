@@ -16,6 +16,23 @@
 #define BUTTON 10
 
 
+enum MorseState
+{
+	none = 0,
+	shortt,
+	longg,
+};
+
+static const uint16_t pulselen[] =
+{
+		 50,	// This acts as a debounce to High
+		450,	// Threshold on which pulse is considered long
+		100,	// debounce to LOW
+};
+
+static enum MorseState currentState = none;
+uint8_t blue_led = 1;
+
 // Global Instance data for the PLIC
 // for use by the PLIC Driver.
 plic_instance_t g_plic;
@@ -27,11 +44,16 @@ typedef void (*interrupt_function_ptr_t) (void);
 //interrupt handlers
 interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
 
-void button_handler() {
-	//clear irq - interrupt pending register write 1 to clear
 
-
-	GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
+void button_handler()
+{
+	currentState = none;
+	setTimer(pulselen[none]);
+	//clear interrupt pending for Button
+	GPIO_REG(GPIO_FALL_IP) |=  (1 << mapPinToReg(10));
+	GPIO_REG(GPIO_FALL_IE) &= ~(1 << mapPinToReg(10));
+	blue_led = 0;
+	setPin(BLUE_LED, blue_led);
 }
 
 /*configures Button0 as a global gpio irq*/
@@ -78,20 +100,48 @@ void handle_m_ext_interrupt()
 	//puts("completed interrupt\r\n");
 }
 
-
-uint8_t blue_led = 1;
 void handle_m_time_interrupt()
 {
 	clear_csr(mie, MIP_MTIP);
-	printf("Der HOT-Button schlägt zu!\r\n");
+	uint8_t buttonStillPressed = !getPin(BUTTON);
+
+	switch(currentState)
+	{
+	case none:
+		if(!buttonStillPressed)
+		{
+			//printf("Too short\r\n");
+			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
+			break;
+		}
+		//printf("min. short\r\n");
+		currentState++;
+		setTimer(pulselen[currentState]);
+		break;
+	case shortt:
+		if(!buttonStillPressed)
+		{
+			printf(".\r\n");
+			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
+			break;
+		}
+		printf("-\r\n");
+		currentState++;
+		setTimer(pulselen[currentState]);
+		break;
+	case longg:
+		if(!buttonStillPressed)
+		{
+			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
+			break;
+		}
+		//Hey, let go of this Button!
+		setTimer(pulselen[currentState]);
+	}
 
 	blue_led ^= 1;
 	setPin(BLUE_LED, blue_led);
-
-
-	setTimer(1000);
 }
-
 
 //default empty PLIC handler
 void invalid_global_isr()
