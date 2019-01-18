@@ -10,12 +10,11 @@
 
 #include <stdint.h>
 
-enum MorseState
+enum MorsePulse
 {
 	none = 0,
 	shortt,
 	longg,
-	pause,
 };
 
 #define MORSE_MAXLEN 5
@@ -27,7 +26,7 @@ typedef struct BTreeNode
 	struct BTreeNode* longg;
 } BTreeNode;
 
-char findChar(enum MorseState list[MORSE_MAXLEN + 1]);
+char findChar(enum MorsePulse list[MORSE_MAXLEN + 1]);
 
 #endif
 

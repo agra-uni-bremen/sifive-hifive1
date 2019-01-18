@@ -18,16 +18,24 @@
 #define BUTTON 10
 
 
-static const uint16_t pulselen[] =
+static enum MorseState
 {
-		 50,	// This acts as a debounce to High
-		450,	// Threshold on which pulse is considered long
-		100,	// debounce to LOW
-		500,	//pause inbetween
+	waitForHigh = 0,
+	waitForLong,
+	debounceLow,
+	pause
+} currentState = waitForHigh;
+
+static const uint16_t pulsetime[] =
+{
+		100,
+		400,
+		100,
+		750
 };
 
-static enum MorseState currentState = none;
-static enum MorseState morseWord[MORSE_MAXLEN + 1];
+
+static enum MorsePulse morseWord[MORSE_MAXLEN + 1];
 static uint8_t currentMorsePos = 0;
 uint8_t blue_led = 1;
 
@@ -45,12 +53,15 @@ interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
 
 void button_handler()
 {
-	currentState = none;
-	setTimer(pulselen[none]);
+	currentState = waitForHigh;
+	setTimer(pulsetime[waitForHigh]);
 	//clear interrupt pending for Button
-	GPIO_REG(GPIO_FALL_IP) |=  (1 << mapPinToReg(10));
-	GPIO_REG(GPIO_FALL_IE) &= ~(1 << mapPinToReg(10));
-	blue_led = 0;
+	GPIO_REG(GPIO_FALL_IP) |=  (1 << mapPinToReg(BUTTON));
+	//disable Interrupt to ignore bouncing
+	GPIO_REG(GPIO_FALL_IE) &= ~(1 << mapPinToReg(BUTTON));
+
+	//blink some happy LEDs
+	blue_led ^= 1;
 	setPin(BLUE_LED, blue_led);
 }
 
@@ -58,23 +69,23 @@ void button_handler()
 void b0_irq_init()  {
 
     //disable hw io function
-    GPIO_REG(GPIO_IOF_EN)    &= ~(1 << mapPinToReg(10));
+    GPIO_REG(GPIO_IOF_EN)    &= ~(1 << mapPinToReg(BUTTON));
 
     //set to input
-    GPIO_REG(GPIO_INPUT_EN)   |= (1 << mapPinToReg(10));
-    GPIO_REG(GPIO_PULLUP_EN)  |= (1 << mapPinToReg(10));
+    GPIO_REG(GPIO_INPUT_EN)   |= (1 << mapPinToReg(BUTTON));
+    GPIO_REG(GPIO_PULLUP_EN)  |= (1 << mapPinToReg(BUTTON));
 
     //set to interrupt on edges
-    GPIO_REG(GPIO_FALL_IE)    |= (1 << mapPinToReg(10));
+    GPIO_REG(GPIO_FALL_IE)    |= (1 << mapPinToReg(BUTTON));
 
     PLIC_init(&g_plic,
   	    PLIC_CTRL_ADDR,
   	    PLIC_NUM_INTERRUPTS,
   	    PLIC_NUM_PRIORITIES);
 
-    PLIC_enable_interrupt (&g_plic, INT_GPIO_BASE + mapPinToReg(10));
-    PLIC_set_priority(&g_plic, INT_GPIO_BASE + mapPinToReg(10), 2);
-    g_ext_interrupt_handlers[INT_GPIO_BASE + mapPinToReg(10)] = button_handler;
+    PLIC_enable_interrupt (&g_plic, INT_GPIO_BASE + mapPinToReg(BUTTON));
+    PLIC_set_priority(&g_plic, INT_GPIO_BASE + mapPinToReg(BUTTON), 2);
+    g_ext_interrupt_handlers[INT_GPIO_BASE + mapPinToReg(BUTTON)] = button_handler;
 
     _puts("Inited button\r\n");
 }
@@ -123,50 +134,64 @@ void handle_m_time_interrupt()
 	uint8_t buttonStillPressed = !getPin(BUTTON);
 	switch(currentState)
 	{
-	case none:
+	case waitForHigh:
+		//puts("wfH: ");
 		if(!buttonStillPressed)
 		{
-			//printf("Too short\r\n");
-			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
+			//debounce, too short
+			//puts("tooShort\r\n");
+			GPIO_REG(GPIO_FALL_IP) |=  (1 << mapPinToReg(BUTTON));
+			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(BUTTON));
 			break;
 		}
-		//printf("min short\r\n");
-		currentState = shortt;
-		setTimer(pulselen[currentState]);
+		//by now, the symbol is at least "short"
+		currentState = waitForLong;
+		//Set Timer minus the time we already waited
+		setTimer(pulsetime[waitForLong] - pulsetime[waitForHigh]);
 		break;
-	case shortt:
+	case waitForLong:
+		//puts("wfL: ");
 		if(!buttonStillPressed)
 		{
 			_putc('.');
-			fflush(stdout);
 			insertIntoMorseWord(shortt);
-			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
-			currentState = pause;
-			setTimer(pulselen[currentState]);
-			break;
 		}
-		_putc('-');
+		else
+		{
+			_putc('-');
+			insertIntoMorseWord(longg);
+		}
 		fflush(stdout);
-		insertIntoMorseWord(longg);
-		currentState = longg;
-		setTimer(pulselen[currentState]);
+		currentState = debounceLow;
+		//Button interrupt is enabled after debounce time
+		setTimer(pulsetime[debounceLow]);
 		break;
-	case longg:
+	case debounceLow:
+		//puts("dbL: ");
 		if(!buttonStillPressed)
 		{
-			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
 			currentState = pause;
-			setTimer(pulselen[currentState]);
-			break;
+
+			//clear interrupt pending for Button
+			//The Timer may be overwritten if the Button is pressed
+			GPIO_REG(GPIO_FALL_IP) |=  (1 << mapPinToReg(BUTTON));
+			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(BUTTON));
+
+			//Set Timer minus the time we already waited for low
+			setTimer(pulsetime[pause] - pulsetime[debounceLow]);
 		}
-		//Hey, let go of this Button!
-		setTimer(pulselen[currentState]);
+		else
+		{
+			//Hey, let go of this Button!
+			setTimer(pulsetime[debounceLow]);
+		}
 		break;
 	case pause:
-		//If we reach this, the Button Interrupt was not fired in between, and we have a pause
+		//puts("Pause: ");
+		//If we reach this, the Button Interrupt was not fired in between, we have a pause
 		_putc(findChar(morseWord));
 		resetMorseWord();
-		currentState = none;
+		currentState = waitForHigh;
 		_puts("\r\n");
 		break;
 	}

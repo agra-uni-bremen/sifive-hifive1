@@ -82,6 +82,7 @@ void sleep(uint32_t millis)
 
 void setTimer(uint32_t millis)
 {
+	//printf("Timer in %u ms\n", millis);
 	volatile uint64_t * mtime       = (uint64_t*) (CLINT_CTRL_ADDR + CLINT_MTIME);
 	volatile uint64_t * mtimecmp    = (uint64_t*) (CLINT_CTRL_ADDR + CLINT_MTIMECMP);
 	uint64_t now = *mtime;

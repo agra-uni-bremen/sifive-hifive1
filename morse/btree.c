@@ -1,5 +1,7 @@
 #include "morse.h"
 
+//for BTree of Morse, see https://commons.wikimedia.org/wiki/File:Morse-code-tree.svg
+
 static BTreeNode h = {'h', NULL, NULL};
 static BTreeNode v = {'v', NULL, NULL};
 static BTreeNode f = {'f', NULL, NULL};
@@ -43,10 +45,10 @@ static BTreeNode e = {'e', &i, &a};
 static BTreeNode t = {'t', &n, &m};
 
 
-static struct BTreeNode morseTreeRoot = {0, &e, &t};
+static BTreeNode morseTreeRoot = {0, &e, &t};
 
 
-static char findInNode(BTreeNode* node, enum MorseState list[MORSE_MAXLEN], uint8_t offs)
+static char findInNode(BTreeNode* node, enum MorsePulse list[MORSE_MAXLEN], uint8_t offs)
 {
 	if(node == NULL || offs > MORSE_MAXLEN)
 	{
@@ -73,7 +75,7 @@ static char findInNode(BTreeNode* node, enum MorseState list[MORSE_MAXLEN], uint
 	}
 }
 
-char findChar(enum MorseState list[MORSE_MAXLEN])
+char findChar(enum MorsePulse list[MORSE_MAXLEN])
 {
 	return findInNode(&morseTreeRoot, list, 0);
 }
