@@ -3,9 +3,11 @@
 // executing out of SPI Flash at 0x20400000.
 
 #include "helpers.h"
+#include "morse.h"
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include "platform.h"
 #include "plic/plic_driver.h"
 #include "encoding.h"	//For CSRs
@@ -16,21 +18,17 @@
 #define BUTTON 10
 
 
-enum MorseState
-{
-	none = 0,
-	shortt,
-	longg,
-};
-
 static const uint16_t pulselen[] =
 {
 		 50,	// This acts as a debounce to High
 		450,	// Threshold on which pulse is considered long
 		100,	// debounce to LOW
+		500,	//pause inbetween
 };
 
 static enum MorseState currentState = none;
+static enum MorseState morseWord[MORSE_MAXLEN + 1];
+static uint8_t currentMorsePos = 0;
 uint8_t blue_led = 1;
 
 // Global Instance data for the PLIC
@@ -100,11 +98,29 @@ void handle_m_ext_interrupt()
 	//puts("completed interrupt\r\n");
 }
 
+void resetMorseWord()
+{
+	memset(morseWord, 0, sizeof(enum MorseState) * (MORSE_MAXLEN + 1));
+	currentMorsePos = 0;
+}
+
+void insertIntoMorseWord(enum MorseState state)
+{
+	if(currentMorsePos >= MORSE_MAXLEN)
+	{
+		puts("Word too long.\r\n");
+		resetMorseWord();
+	}
+	else
+	{
+		morseWord[currentMorsePos++] = state;
+	}
+}
+
 void handle_m_time_interrupt()
 {
 	clear_csr(mie, MIP_MTIP);
 	uint8_t buttonStillPressed = !getPin(BUTTON);
-
 	switch(currentState)
 	{
 	case none:
@@ -114,29 +130,45 @@ void handle_m_time_interrupt()
 			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
 			break;
 		}
-		//printf("min. short\r\n");
-		currentState++;
+		//printf("min short\r\n");
+		currentState = shortt;
 		setTimer(pulselen[currentState]);
 		break;
 	case shortt:
 		if(!buttonStillPressed)
 		{
-			printf(".\r\n");
+			_putc('.');
+			fflush(stdout);
+			insertIntoMorseWord(shortt);
 			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
+			currentState = pause;
+			setTimer(pulselen[currentState]);
 			break;
 		}
-		printf("-\r\n");
-		currentState++;
+		_putc('-');
+		fflush(stdout);
+		insertIntoMorseWord(longg);
+		currentState = longg;
 		setTimer(pulselen[currentState]);
 		break;
 	case longg:
 		if(!buttonStillPressed)
 		{
 			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(10));
+			currentState = pause;
+			setTimer(pulselen[currentState]);
 			break;
 		}
 		//Hey, let go of this Button!
 		setTimer(pulselen[currentState]);
+		break;
+	case pause:
+		//If we reach this, the Button Interrupt was not fired in between, and we have a pause
+		_putc(findChar(morseWord));
+		resetMorseWord();
+		currentState = none;
+		_puts("\r\n");
+		break;
 	}
 
 	blue_led ^= 1;
@@ -172,10 +204,10 @@ int main (void)
 	// Enable Global (PLIC) interrupts.
 	set_csr(mie, MIP_MEIP);
 
+	resetMorseWord();
+
 	// Enable all interrupts
 	set_csr(mstatus, MSTATUS_MIE);
-
-	setTimer(1000);
 
 	uint8_t green_led = 1;
 	while(1)
