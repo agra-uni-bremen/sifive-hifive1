@@ -28,10 +28,10 @@ static enum MorseState
 
 static const uint16_t pulsetime[] =
 {
-		100,
-		400,
-		100,
-		750
+		100,	//debounce to High
+		400,	//when a pulse is considered High
+		100,	//debounce to Low
+		750		//when a low is considered Pause
 };
 
 
@@ -140,7 +140,7 @@ void handle_m_time_interrupt()
 		{
 			//debounce, too short
 			//puts("tooShort\r\n");
-			GPIO_REG(GPIO_FALL_IP) |=  (1 << mapPinToReg(BUTTON));
+			GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(BUTTON));
 			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(BUTTON));
 			break;
 		}
@@ -174,7 +174,7 @@ void handle_m_time_interrupt()
 
 			//clear interrupt pending for Button
 			//The Timer may be overwritten if the Button is pressed
-			GPIO_REG(GPIO_FALL_IP) |=  (1 << mapPinToReg(BUTTON));
+			GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(BUTTON));
 			GPIO_REG(GPIO_FALL_IE) |= (1 << mapPinToReg(BUTTON));
 
 			//Set Timer minus the time we already waited for low
@@ -189,6 +189,7 @@ void handle_m_time_interrupt()
 	case pause:
 		//puts("Pause: ");
 		//If we reach this, the Button Interrupt was not fired in between, we have a pause
+		_putc('\t');
 		_putc(findChar(morseWord));
 		resetMorseWord();
 		currentState = waitForHigh;

@@ -1,5 +1,13 @@
 #include "morse.h"
 
+typedef struct BTreeNode
+{
+	char val;
+	struct BTreeNode* shortt;
+	struct BTreeNode* longg;
+} BTreeNode;
+
+
 //for BTree of Morse, see https://commons.wikimedia.org/wiki/File:Morse-code-tree.svg
 
 static BTreeNode h = {'h', NULL, NULL};

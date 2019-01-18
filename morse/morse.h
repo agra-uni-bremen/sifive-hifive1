@@ -19,13 +19,6 @@ enum MorsePulse
 
 #define MORSE_MAXLEN 5
 
-typedef struct BTreeNode
-{
-	char val;
-	struct BTreeNode* shortt;
-	struct BTreeNode* longg;
-} BTreeNode;
-
 char findChar(enum MorsePulse list[MORSE_MAXLEN + 1]);
 
 #endif
