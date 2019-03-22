@@ -65,15 +65,20 @@ static void _puts(const char * s) {
 
 static uint32_t mapPinToReg(uint8_t pin)
 {
-	if(pin < 8)
-	{
-		return pin + PIN_0_OFFSET;
-	}
-	if(pin < 20)
-	{
-		return pin - 8;
-	}
-	return 0;	//also ignoring non-wired pin 14 <==> 8
+    if(pin < 8)
+    {
+        return pin + PIN_0_OFFSET;
+    }
+    if(pin >= 8 && pin < 14)
+    {
+        return pin - 8;
+    }
+    //ignoring non-wired pin 14 <==> 8
+    if(pin > 14 && pin < 20)
+    {
+        return pin - 6;
+    }
+    return 0;
 }
 
 static void setPinOutput(uint8_t pin)
@@ -107,7 +112,14 @@ static uint8_t getPin(uint8_t pin)
 	return GPIO_REG(GPIO_INPUT_VAL) & (1 << mapPinToReg(pin));
 }
 
-static uint16_t segmentMapping[10] =
+static uint8_t pinMapping[8] =
+{
+  15, 16, 17, 18, 19, 7, 6, 5
+};
+
+static const uint8_t BUTTONPIN = 3;
+
+static uint8_t segmentMapping[10] =
 {
 		//abcdefg
 		//0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B
@@ -147,16 +159,16 @@ static void displayNumber(uint8_t number, uint8_t dot)
 	uint32_t reg = GPIO_REG(GPIO_OUTPUT_VAL) & ~(0xFF << PIN_0_OFFSET);
 	if(number < 10)
 	{
-		for(uint8_t i = 0; i < 8; i++)
+		for(uint8_t i = 0; i < 7; i++)
 		{
-			setPin(&reg, 2 + i, segmentMapping[number] & (1 << i));
+			setPin(&reg, pinMapping[i], segmentMapping[number] & (1 << i));
 		}
 	}
 	else
 		reg |= 1 << 7;
 
 	if(dot)
-		setPin(&reg, 9, 1);
+		setPin(&reg, pinMapping[7], 1);
 
 	//_puts("New OUTPUT_VALUE: \r\n");
 	//bitprint(reg);
@@ -194,31 +206,31 @@ void button_handler() {
 		directionChangePending = 1;
 	}
 	//clear irq - interrupt pending register is write 1 to clear
-	GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(10));
+	GPIO_REG(GPIO_FALL_IP) |= (1 << mapPinToReg(BUTTONPIN));
 	_puts("button press handled\r\n");
 }
 
 /*configures Button0 as a global gpio irq*/
-void b0_irq_init()  {
+void b0_irq_init(uint8_t pin)  {
 
     //disable hw io function
-    GPIO_REG(GPIO_IOF_EN )    &= ~(1 << mapPinToReg(10));
+    GPIO_REG(GPIO_IOF_EN )    &= ~(1 << mapPinToReg(pin));
 
     //set to input
-    GPIO_REG(GPIO_INPUT_EN)   |= (1 << mapPinToReg(10));
-    GPIO_REG(GPIO_PULLUP_EN)  |= (1 << mapPinToReg(10));
+    GPIO_REG(GPIO_INPUT_EN)   |= (1 << mapPinToReg(pin));
+    GPIO_REG(GPIO_PULLUP_EN)  |= (1 << mapPinToReg(pin));
 
     //set to interrupt on falling edge
-    GPIO_REG(GPIO_FALL_IE)    |= (1 << mapPinToReg(10));
+    GPIO_REG(GPIO_FALL_IE)    |= (1 << mapPinToReg(pin));
 
     PLIC_init(&g_plic,
   	    PLIC_CTRL_ADDR,
   	    PLIC_NUM_INTERRUPTS,
   	    PLIC_NUM_PRIORITIES);
 
-    PLIC_enable_interrupt (&g_plic, INT_GPIO_BASE + mapPinToReg(10));
-    PLIC_set_priority(&g_plic, INT_GPIO_BASE + mapPinToReg(10), 2);
-    g_ext_interrupt_handlers[INT_GPIO_BASE + mapPinToReg(10)] = button_handler;
+    PLIC_enable_interrupt (&g_plic, INT_GPIO_BASE + mapPinToReg(pin));
+    PLIC_set_priority(&g_plic, INT_GPIO_BASE + mapPinToReg(pin), 2);
+    g_ext_interrupt_handlers[INT_GPIO_BASE + mapPinToReg(pin)] = button_handler;
 
     _puts("Inited button\r\n");
 }
@@ -296,16 +308,16 @@ int main (void)
 	char c = 0;
 	uint8_t counter = 0;
 
-	for(uint8_t i = 2; i <= 9; i++)
+	for(uint8_t i = 0; i < 8; i++)
 	{
-		setPinOutput(i);
+		setPinOutput(pinMapping[i]);
 	}
 
 	//setup default global interrupt handler
 	for (int gisr = 0; gisr < PLIC_NUM_INTERRUPTS; gisr++){
 		g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS] = invalid_global_isr;
 	}
-	b0_irq_init();
+	b0_irq_init(BUTTONPIN);
 
 	// Set up machine timer interrupt.
 	//set_timer();
@@ -329,7 +341,7 @@ int main (void)
 		sleep(500);
 		directionChangePending = 0;
 
-		// Check for user input
+    	// Check for user input
 		if (c == 0)
 		{
 			if (_getc(&c) != 0)
