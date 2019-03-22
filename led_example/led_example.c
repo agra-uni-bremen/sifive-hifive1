@@ -99,11 +99,11 @@ interrupt_function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
 void button_handler() {
 	if(getPin(10))
 	{	//rise
-		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), RED_LED, 0);
+		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), RED_LED, 1);
 	}
 	else
 	{	//fall
-		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), RED_LED, 1);
+		setPin(&GPIO_REG(GPIO_OUTPUT_VAL), RED_LED, 0);
 	}
 	//clear irq - interrupt pending register write 1 to clear
 	GPIO_REG(GPIO_RISE_IP) |= (1 << mapPinToReg(10));
@@ -181,8 +181,11 @@ int main (void)
 	_puts("\n\r");
 
 	setPinOutput(RED_LED);
+	setPin(&GPIO_REG(GPIO_OUTPUT_VAL), RED_LED, 1);
 	setPinOutput(BLUE_LED);
+	setPin(&GPIO_REG(GPIO_OUTPUT_VAL), BLUE_LED, 1);
 	setPinOutput(GREEN_LED);
+	setPin(&GPIO_REG(GPIO_OUTPUT_VAL), GREEN_LED, 1);
 
 	//setup default global interrupt handler
 	for (int gisr = 0; gisr < PLIC_NUM_INTERRUPTS; gisr++){
@@ -199,7 +202,7 @@ int main (void)
 	//  abcdefg.
 	//0x11111111
 
-	uint8_t green_led = 0;
+	uint8_t green_led = 1;
 	while(1)
 	{
 		sleep(500);
