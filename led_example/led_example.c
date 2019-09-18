@@ -199,9 +199,6 @@ int main (void)
 	// Enable all interrupts
 	set_csr(mstatus, MSTATUS_MIE);
 
-	//  abcdefg.
-	//0x11111111
-
 	uint8_t green_led = 1;
 	while(1)
 	{

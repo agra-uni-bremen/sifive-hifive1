@@ -11,3 +11,6 @@
 [submodule "spi_can/CAN_BUS_Shield"]
 	path = spi_can/CAN_BUS_Shield
 	url = git@github.com:agra-uni-bremen/CAN_BUS_Shield.git
+[submodule "pmodoled"]
+	path = pmodoled
+	url = git@github.com:laanwj/pmodoled.git
