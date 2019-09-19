@@ -12,6 +12,7 @@
 #include "encoding.h"	//For CSRs
 #include "sifive/devices/spi.h"
 
+#include "font.h"
 #include "display.h"
 #include "mandelbrot.h"
 
@@ -23,6 +24,8 @@
 #define OLED_DC		15
 #define OLED_CS		10
 
+
+static char lipsum[] = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
 
 // Global Instance data for the PLIC
 // for use by the PLIC Driver.
@@ -65,7 +68,6 @@ void invalid_global_isr()
 	printf("Unexpected global interrupt!\r\n");
 }
 
-
 int main (void)
 {
 
@@ -87,35 +89,41 @@ int main (void)
 	// Enable all interrupts
 	set_csr(mstatus, MSTATUS_MIE);
 
+	uart_init();
+
 	oled_init();
 
-	oled_clear();
-
-	// Data mode is assumed the default throughout the program
-	mode_data();
 	puts("Now mainloop\r\n");
+	printText("\n\n\npress ESC to exit\n");
+	sleep(2000);
+	uint8_t ch = 0;
 	while (1) {
-		for(uint16_t x = 0; x < DISP_W; x++)
+		cls();
+		puts("Mandelbrot\r\n");
+		mandelbrot();
+
+		cls();
+		puts("Textmode\r\n");
+		printText("[ESC to exit]\n");
+		while(!_getc(&ch))
+			asm volatile ("nop");
+		cls();
+		while(ch != 27)
 		{
-			for(uint16_t y = 0; y < DISP_H; y++)
-			{
-				set_x(x);
-				set_y(y/8);
-
-				spi(1 << (y%8));
-
-				puts("X: ");
-				_putc('0' + x);
-				puts(" ");
-				puts("Y: ");
-				_putc('0' + y);
-				puts("\r\n");
-				sleep(10);
-				oled_clear();
-			}
+			printChar(ch);
+			while(!_getc(&ch))
+				asm volatile ("nop");
 		}
-		// Mode: mandelbrot
 
-
+		cls();
+		puts("LoremIpsum\r\n");
+		unsigned lorem_pointer = 0;
+		while(!_getc(&ch))
+		{
+			printChar(lipsum[lorem_pointer]);
+			if(lorem_pointer % ((DISP_W / CHAR_W) * (DISP_H/8)) == ((DISP_W / CHAR_W) * (DISP_H/8))-1)
+				sleep(100);
+			lorem_pointer = lorem_pointer + 1 >= sizeof(lipsum) ? 0 : lorem_pointer + 1;
+		}
 	}
 }

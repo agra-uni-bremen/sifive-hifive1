@@ -6,7 +6,9 @@
 #include <stdint.h>
 
 /** Display width in pixels */
-#define DISP_W 128+3
+#define DISP_W 128
+#define DISP_MEM_W 132
+#define DISP_W_OFFS ((DISP_MEM_W-DISP_W)/2)
 /** Display height in pixels */
 #define DISP_H 64
 
@@ -87,9 +89,20 @@ void mode_data(void);
 /** set mode to commands */
 void mode_cmd(void);
 
+void setDisplayOn(uint8_t on);
+void setChargePumpVoltage(uint8_t voltage);
+void invertColor(uint8_t invert);
+void setEntireDisplayOn(uint8_t allWhite);
+void setDisplayStartLine(uint8_t startline);
+void setDisplayOffset(uint8_t something);
+void flipDisplay(uint8_t flip);
+void setContrast(uint8_t contrast);
+void fadeIn(uint64_t millis);
+void fadeOut(uint64_t millis);
 
 void set_x(unsigned col);
 void set_y(unsigned row);
+void set_xy(unsigned col, unsigned row);
 /** clear (visible portion of) screen, reset pointers */
 void oled_clear(void);
 

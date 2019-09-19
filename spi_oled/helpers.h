@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+void uart_init();
 void _putc(char c);
 int _getc(char * c);
 void _puts(const char * s);

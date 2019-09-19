@@ -7,6 +7,18 @@
 #include "platform.h"
 #include "plic/plic_driver.h"
 
+void uart_init()
+{
+    // Configure UART GPIO pins
+    GPIO_REG(GPIO_OUTPUT_VAL) |= IOF0_UART0_MASK;
+    GPIO_REG(GPIO_OUTPUT_EN)  |= IOF0_UART0_MASK;
+    GPIO_REG(GPIO_IOF_SEL)    &= ~IOF0_UART0_MASK;
+    GPIO_REG(GPIO_IOF_EN)     |= IOF0_UART0_MASK;
+    // RX and TX enable
+    UART0_REG(UART_REG_TXCTRL) = UART_TXEN;
+    UART0_REG(UART_REG_RXCTRL) = UART_RXEN;
+}
+
 void _putc(char c) {
   while ((int32_t) UART0_REG(UART_REG_TXFIFO) < 0);
   UART0_REG(UART_REG_TXFIFO) = c;
