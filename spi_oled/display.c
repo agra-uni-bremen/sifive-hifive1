@@ -36,7 +36,6 @@ void spi_init(void)
     // Set up SPI controller
     /** SPI clock divider: determines the speed of SPI
      * transfers.
-     * CPUfreq is set to 16Mhz in this demo.
      * The formula is CPU_FREQ/(1+SPI_SCKDIV)
      */
     SPI1_REG(SPI_REG_SCKDIV)    = (get_cpu_freq() / MAX_SPI_FREQ) - 1;
@@ -196,7 +195,6 @@ void oled_init()
     // 4. Clear screen (entire memory)
     oled_clear();
     setDisplayOn(1);
-    set_xy(0,0);
 }
 
 void set_x(unsigned col)
