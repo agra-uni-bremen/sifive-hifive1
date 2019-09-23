@@ -41,7 +41,7 @@ void spi_init(void)
      */
     SPI1_REG(SPI_REG_SCKDIV)    = (get_cpu_freq() / MAX_SPI_FREQ) - 1;
     SPI1_REG(SPI_REG_SCKMODE)   = 0; /* pol and pha both 0 - SCLK is active-high, */
-    SPI1_REG(SPI_REG_CSID)      = OLED_CS_OFS; /* CS 0 */
+    SPI1_REG(SPI_REG_CSID)      = OLED_CS_OFS;
     SPI1_REG(SPI_REG_CSDEF)     = 0xffff; /* CS is active-low */
     SPI1_REG(SPI_REG_CSMODE)    = SPI_CSMODE_HOLD; /* hold CS where possible */
     /* SPI1_REG(SPI_REG_DCSSCK)    = */
@@ -75,7 +75,6 @@ void mode_data(void)
 	if(!(GPIO_REG(GPIO_OUTPUT_VAL) & (1 << mapPinToReg(OLED_DC))))
 	{
 		spi_complete(); /* wait for SPI to complete before toggling */
-		//SPI1_REG(SPI_REG_CSID)      = 1; /* CS 1 */
 		setPin(OLED_DC, 1);
 	}
 }
@@ -86,7 +85,6 @@ void mode_cmd(void)
 	if(GPIO_REG(GPIO_OUTPUT_VAL) & (1 << mapPinToReg(OLED_DC)))
 	{
 		spi_complete(); /* wait for SPI to complete before toggling */
-		//SPI1_REG(SPI_REG_CSID)      = 0; /* CS 0 */
 		setPin(OLED_DC, 0);
 	}
 }
