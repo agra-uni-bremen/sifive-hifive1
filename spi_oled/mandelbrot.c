@@ -23,6 +23,7 @@ void mandelbrot()
     fp_t start_radiusy = I(1);
     fp_t radiusx = start_radiusx;
     fp_t radiusy = start_radiusy;
+    setContrast(0);
     while (!_getc(&c)) {
 		if (frame == 0) {
 			do {
