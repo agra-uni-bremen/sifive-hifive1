@@ -13,7 +13,7 @@ int interesting(fp_t x, fp_t y)
     return 1; /* TODO */
 }
 
-void mandelbrot()
+void mandelbrot(uint8_t (*wait_condition)(void))
 {
     char c;
     int frame = 0;
@@ -24,7 +24,7 @@ void mandelbrot()
     fp_t radiusx = start_radiusx;
     fp_t radiusy = start_radiusy;
     setContrast(0);
-    while (!_getc(&c)) {
+    while (!(wait_condition)()) {
 		if (frame == 0) {
 			do {
 				centerx = ((fp_t)mrand48()<<(PREC-31)) + I(-1)/2;

@@ -20,6 +20,10 @@
 #define BLUE_LED 5
 #define RED_LED 6
 
+#define BUTTON_1 7
+#define BUTTON_2 6
+#define BUTTON_3 5
+
 static char lipsum[] = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
 
 // Global Instance data for the PLIC
@@ -63,15 +67,33 @@ void invalid_global_isr()
 	printf("Unexpected global interrupt!\r\n");
 }
 
+uint8_t interaction()
+{
+	uint8_t ch;
+	//printGPIOs();
+	//printf("BUTTON_1 is %s\n", getPin(BUTTON_1) ? "high" : "low");
+	//printf("BUTTON_2 is %s\n", getPin(BUTTON_2) ? "high" : "low");
+	//printf("BUTTON_3 is %s\n", getPin(BUTTON_3) ? "high" : "low");
+	if(!getPin(BUTTON_2))
+		return 1;
+	if(!_getc(&ch))
+		return 0;
+	return ch;
+}
+
 int main (void)
 {
 
-	setPinOutput(RED_LED);
-	setPin(RED_LED, 1);
-	setPinOutput(BLUE_LED);
-	setPin(BLUE_LED, 1);
+	//setPinOutput(RED_LED);
+	//setPin(RED_LED, 1);
+	//setPinOutput(BLUE_LED);
+	//setPin(BLUE_LED, 1);
 	setPinOutput(GREEN_LED);
 	setPin(GREEN_LED, 1);
+
+	setPinInputPullup(BUTTON_1, 1);
+	setPinInputPullup(BUTTON_2, 1);
+	setPinInputPullup(BUTTON_3, 1);
 
 	//setup default global interrupt handler
 	for (int gisr = 0; gisr < PLIC_NUM_INTERRUPTS; gisr++){
@@ -95,30 +117,44 @@ int main (void)
 	while (1) {
 		cls();
 		puts("Mandelbrot\r\n");
-		mandelbrot();
+		mandelbrot(interaction);
 
 		cls();
 		puts("Textmode\r\n");
 		printText("[ESC to exit]\n");
-		while(!_getc(&ch))
+		//meh
+		while(!getPin(BUTTON_2))
 			asm volatile ("nop");
+		while(!(ch = interaction()))
+			asm volatile ("nop");
+
 		cls();
-		while(ch != 27)
+
+		while(ch != 27 && getPin(BUTTON_2))
 		{
-			printChar(ch);
-			while(!_getc(&ch))
+			if(ch > 5)
+				printChar(ch);
+			while(!(ch = interaction()))
 				asm volatile ("nop");
 		}
 
 		cls();
+		//meh
+		while(!getPin(BUTTON_2))
+			asm volatile ("nop");
+
 		puts("LoremIpsum\r\n");
+
 		unsigned lorem_pointer = 0;
-		while(!_getc(&ch))
+		while(!interaction())
 		{
 			printChar(lipsum[lorem_pointer]);
 			if(lorem_pointer % ((DISP_W / CHAR_W) * (DISP_H/8)) == ((DISP_W / CHAR_W) * (DISP_H/8))-1)
 				sleep(100);
 			lorem_pointer = lorem_pointer + 1 >= sizeof(lipsum) ? 0 : lorem_pointer + 1;
 		}
+		//meh
+		while(!getPin(BUTTON_2))
+			asm volatile ("nop");
 	}
 }

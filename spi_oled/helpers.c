@@ -40,6 +40,16 @@ void _puts(const char * s) {
   }
 }
 
+void bitprint(uint32_t val)
+{
+	for(uint8_t i = 0; i < 32; i++)
+	{
+		_putc(val & (1 << (32 - i)) ? '1' : '0');
+	}
+	_puts("\r\n");
+}
+
+
 uint32_t mapPinToReg(uint8_t pin)
 {
     if(pin < 8)
@@ -67,9 +77,18 @@ void setPinOutput(uint8_t pin)
 
 void setPinInput(uint8_t pin)
 {
-	  GPIO_REG(GPIO_OUTPUT_EN)  &= ~(1 << mapPinToReg(pin));
-	  GPIO_REG(GPIO_PULLUP_EN)  &= ~(1 << mapPinToReg(pin));
-	  GPIO_REG(GPIO_INPUT_EN)   |= 1 << mapPinToReg(pin);
+	setPinInputPullup(pin, 0);
+}
+
+void setPinInputPullup(uint8_t pin, uint8_t pullup_enable)
+{
+	GPIO_REG(GPIO_IOF_EN )    &= ~(1 << mapPinToReg(pin));
+	GPIO_REG(GPIO_OUTPUT_EN)  &= ~(1 << mapPinToReg(pin));
+	if(pullup_enable)
+		GPIO_REG(GPIO_PULLUP_EN)  |= (1 << mapPinToReg(pin));
+	else
+		GPIO_REG(GPIO_PULLUP_EN)  &= ~(1 << mapPinToReg(pin));
+	GPIO_REG(GPIO_INPUT_EN)   |= 1 << mapPinToReg(pin);
 }
 
 void setPin(uint8_t pin, uint8_t val)
@@ -86,9 +105,20 @@ void setPin(uint8_t pin, uint8_t val)
 
 uint8_t getPin(uint8_t pin)
 {
-	return GPIO_REG(GPIO_INPUT_VAL) & (1 << mapPinToReg(pin));
+	return (GPIO_REG(GPIO_INPUT_VAL) & (1 << mapPinToReg(pin))) ? 1 : 0;
 }
 
+void printGPIOs()
+{
+	_puts("Output ENABLE ");
+	bitprint(GPIO_REG(GPIO_OUTPUT_EN));
+	_puts("Output  VALUE ");
+	bitprint(GPIO_REG(GPIO_OUTPUT_VAL));
+	_puts("Input  ENABLE ");
+	bitprint(GPIO_REG(GPIO_INPUT_EN));
+	_puts("Input   VALUE ");
+	bitprint(GPIO_REG(GPIO_INPUT_VAL));
+}
 
 void sleep_u(uint64_t micros)
 {
