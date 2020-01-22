@@ -25,6 +25,7 @@ void mandelbrot(uint8_t (*wait_condition)(void))
     fp_t radiusy = start_radiusy;
     setContrast(0);
     while (!(wait_condition)()) {
+    	printf("Frame %d\n", frame);
 		if (frame == 0) {
 			do {
 				centerx = ((fp_t)mrand48()<<(PREC-31)) + I(-1)/2;

@@ -62,6 +62,8 @@ void spi(uint8_t data)
 
 void spi_complete()
 {
+    //return;     //FIXME: This simulates the bug
+
     // Wait for interrupt condition.
     // It would be more efficient to use an actual interrupt here.
     while (!(SPI1_REG(SPI_REG_IP) & SPI_IP_TXWM))
@@ -185,6 +187,9 @@ void oled_init()
     // Command mode
 	mode_cmd();
 
+    // To see the bug better. Normally, this is the last thing to do.
+    // setDisplayOn(1);
+
 	// Initialize display to desired operating mode.
 
     setChargePumpVoltage(0b10);
@@ -230,5 +235,4 @@ void oled_clear(void)
     }
 	set_xy(0,0);
 }
-
 

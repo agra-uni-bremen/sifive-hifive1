@@ -111,7 +111,7 @@ int main (void)
 	oled_init();
 
 	puts("Now mainloop\r\n");
-	printText("\n\n\npress ESC to exit\n");
+	printText("\n\n\n  Press any button\n      to exit\n");
 	sleep(2000);
 	uint8_t ch = 0;
 	while (1) {
@@ -134,6 +134,7 @@ int main (void)
 		{
 			if(ch > 5)
 				printChar(ch);
+			_putc(ch);		//enable echo
 			while(!(ch = interaction()))
 				asm volatile ("nop");
 		}
@@ -143,7 +144,7 @@ int main (void)
 		while(!getPin(BUTTON_2))
 			asm volatile ("nop");
 
-		puts("LoremIpsum\r\n");
+		puts("\r\nLoremIpsum\r\n");
 
 		unsigned lorem_pointer = 0;
 		while(!interaction())
