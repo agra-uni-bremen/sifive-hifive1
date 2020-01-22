@@ -111,7 +111,7 @@ void enableInterrupt(uint8_t pin, uint8_t mode)
 		GPIO_REG(GPIO_LOW_IE)    |= (1 << mapPinToReg(pin));
 		break;
 	default:
-		_puts("Invalid interrupt mode")
+		_puts("Invalid interrupt mode");
 	}
 
 

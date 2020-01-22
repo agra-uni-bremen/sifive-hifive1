@@ -61,12 +61,17 @@ void handle_m_ext_interrupt()
 
 void button_handler(plic_source int_num)
 {
-	switch(int_num - INT_GPIO_BASE)
+	int_num -= INT_GPIO_BASE;
+	if(int_num ==  mapPinToReg(BUTTON_D))
 	{
-	case mapPinToReg(BUTTON_D):
 		puts("BUTTON D!\r\n");
-		break;
-	default:
+	}
+	else if(int_num == mapPinToReg(BUTTON_U))
+	{
+		puts("BUTTON U!\r\n");
+	}
+	else
+	{
 		puts("Some button.\r\n");
 	}
 }
@@ -101,8 +106,6 @@ void handle_m_time_interrupt()
 {
 	clear_csr(mie, MIP_MTIP);
 }
-
-
 
 int main (void)
 {

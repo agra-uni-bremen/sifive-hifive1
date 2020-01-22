@@ -15,7 +15,7 @@ build-$(1): pre-$(1)
 upload-$(1): build-$(1)
 	cd freedom-e-sdk && make upload PROGRAM=$(1)
 sim-$(1): build-$(1)
-	 hifive-$(1)/$(1)
+	 hifive-vp $(1)/$(1)
 endef
 
 $(foreach project,$(projects),$(eval $(call template,$(project))))
