@@ -70,10 +70,24 @@ void button_handler(plic_source int_num)
 	{
 		puts("BUTTON U!\r\n");
 	}
+	else if(int_num == mapPinToReg(BUTTON_L))
+	{
+		puts("BUTTON L!\r\n");
+	}
+	else if(int_num == mapPinToReg(BUTTON_R))
+	{
+		puts("BUTTON R!\r\n");
+	}
+	else if(int_num == mapPinToReg(BUTTON_CTR))
+	{
+		puts("BUTTON C!\r\n");
+	}
 	else
 	{
 		puts("Some button.\r\n");
 	}
+	GPIO_REG(GPIO_RISE_IP) |= (1 << int_num);
+	GPIO_REG(GPIO_FALL_IP) |= (1 << int_num);
 }
 
 //default empty PLIC handler
@@ -93,12 +107,12 @@ void setup_button_irq()
 	for(unsigned i = 0; i < sizeof(buttons); i++)
 	{
 		setPinInputPullup(buttons[i], 1);
-		enableInterrupt(buttons[i], 0);	//rise necessary?
+		//enableInterrupt(buttons[i], 0);	//rise necessary?
 		enableInterrupt(buttons[i], 1);	//fall
 	    PLIC_enable_interrupt (&g_plic, INT_GPIO_BASE + mapPinToReg(buttons[i]));
 	    PLIC_set_priority(&g_plic, INT_GPIO_BASE + mapPinToReg(buttons[i]), 2+i);
 	    g_ext_interrupt_handlers[INT_GPIO_BASE + mapPinToReg(buttons[i])] = button_handler;
-
+	    printf("Inited button %d\r\n", buttons[i]);
 	}
 }
 
@@ -109,21 +123,18 @@ void handle_m_time_interrupt()
 
 int main (void)
 {
-
+	_init();
 	//setup default global interrupt handler
 	for (int gisr = 0; gisr < PLIC_NUM_INTERRUPTS; gisr++){
 		g_ext_interrupt_handlers[gisr] = invalid_global_isr;
 	}
 	setup_button_irq();
 
-
 	// Enable Global (PLIC) interrupts.
 	set_csr(mie, MIP_MEIP);
 
 	// Enable all interrupts
 	set_csr(mstatus, MSTATUS_MIE);
-
-	uart_init();
 
 	oled_init();
 
