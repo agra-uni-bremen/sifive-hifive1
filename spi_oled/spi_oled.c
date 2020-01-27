@@ -20,18 +20,35 @@
 #define BLUE_LED 5
 #define RED_LED 6
 
-#define BUTTON_1 7
-#define BUTTON_2 6
-#define BUTTON_3 5
+#define BUTTON_D   3
+#define BUTTON_CTR 4
+#define BUTTON_R   5
+#define BUTTON_L   6
+#define BUTTON_U   7
+#define BUTTON_A   18
+#define BUTTON_B   19
+
+const uint8_t buttons[] =
+{
+	BUTTON_D,
+	BUTTON_CTR,
+	BUTTON_R,
+	BUTTON_L,
+	BUTTON_U,
+	BUTTON_A,
+	BUTTON_B
+};
 
 static char lipsum[] = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
+enum State {MANDELBROT = 0, TEXTMODE, LOREM, STATE_num};
+volatile enum State state;
 
 // Global Instance data for the PLIC
 // for use by the PLIC Driver.
 plic_instance_t g_plic;
 // Structures for registering different interrupt handlers
 // for different parts of the application.
-typedef void (*interrupt_function_ptr_t) (void);
+typedef void (*interrupt_function_ptr_t) (plic_source);
 
 //array of function pointers which contains the PLIC
 //interrupt handlers
@@ -44,7 +61,7 @@ void handle_m_ext_interrupt()
     plic_source int_num  = PLIC_claim_interrupt(&g_plic);
 	if ((int_num >=1 ) && (int_num < PLIC_NUM_INTERRUPTS))
 	{
-		g_ext_interrupt_handlers[int_num]();
+		g_ext_interrupt_handlers[int_num](int_num);
 	}
 	else
 	{
@@ -61,20 +78,88 @@ void handle_m_time_interrupt()
 	clear_csr(mie, MIP_MTIP);
 }
 
-//default empty PLIC handler
-void invalid_global_isr()
+void button_handler(plic_source int_num)
 {
-	printf("Unexpected global interrupt!\r\n");
+	unsigned state_changed = 0;
+	int_num -= INT_GPIO_BASE;
+	if(int_num ==  mapPinToReg(BUTTON_D))
+	{
+		puts("BUTTON D!\r\n");
+	}
+	else if(int_num == mapPinToReg(BUTTON_U))
+	{
+		puts("BUTTON U!\r\n");
+	}
+	else if(int_num == mapPinToReg(BUTTON_L))
+	{
+		puts("BUTTON L!\r\n");
+	}
+	else if(int_num == mapPinToReg(BUTTON_R))
+	{
+		puts("BUTTON R!\r\n");
+		state = ++state%STATE_num;
+		state_changed = 1;
+	}
+	else if(int_num == mapPinToReg(BUTTON_CTR))
+	{
+		puts("BUTTON C!\r\n");
+	}
+	else
+	{
+		puts("Some button.\r\n");
+	}
+
+	//transitions
+	if(state_changed)
+	{
+		switch (state)
+		{
+		case MANDELBROT:
+			puts("Mandelbrot\r\n");
+			break;
+		case TEXTMODE:
+			puts("Textmode\r\n");
+			break;
+		case LOREM:
+			puts("Lorem ipsum\r\n");
+			break;
+		default:
+			printText("Invalid mode\n");
+			sleep(1000);
+		}
+	}
+
+	GPIO_REG(GPIO_FALL_IP) |= (1 << int_num);
+}
+//default empty PLIC handler
+void invalid_global_isr(plic_source int_num)
+{
+	printf("Unexpected global interrupt %d!\r\n", int_num);
 }
 
-uint8_t interaction()
+void setup_button_irq()
+{
+    PLIC_init(&g_plic,
+            PLIC_CTRL_ADDR,
+            PLIC_NUM_INTERRUPTS,
+            PLIC_NUM_PRIORITIES);
+
+	for(unsigned i = 0; i < sizeof(buttons); i++)
+	{
+		setPinInputPullup(buttons[i], 1);
+		enableInterrupt(buttons[i], 1);	//fall
+	    PLIC_enable_interrupt (&g_plic, INT_GPIO_BASE + mapPinToReg(buttons[i]));
+	    PLIC_set_priority(&g_plic, INT_GPIO_BASE + mapPinToReg(buttons[i]), 2+i);
+	    g_ext_interrupt_handlers[INT_GPIO_BASE + mapPinToReg(buttons[i])] = button_handler;
+	    printf("Inited button %d\r\n", buttons[i]);
+	}
+}
+
+uint8_t wait_condition()
 {
 	uint8_t ch;
 	//printGPIOs();
-	//printf("BUTTON_1 is %s\n", getPin(BUTTON_1) ? "high" : "low");
-	//printf("BUTTON_2 is %s\n", getPin(BUTTON_2) ? "high" : "low");
-	//printf("BUTTON_3 is %s\n", getPin(BUTTON_3) ? "high" : "low");
-	if(!getPin(BUTTON_2))
+	if(state == MANDELBROT)
 		return 1;
 	if(!_getc(&ch))
 		return 0;
@@ -83,22 +168,12 @@ uint8_t interaction()
 
 int main (void)
 {
-
-	//setPinOutput(RED_LED);
-	//setPin(RED_LED, 1);
-	//setPinOutput(BLUE_LED);
-	//setPin(BLUE_LED, 1);
-	setPinOutput(GREEN_LED);
-	setPin(GREEN_LED, 1);
-
-	setPinInputPullup(BUTTON_1, 1);
-	setPinInputPullup(BUTTON_2, 1);
-	setPinInputPullup(BUTTON_3, 1);
-
+	_init();
 	//setup default global interrupt handler
 	for (int gisr = 0; gisr < PLIC_NUM_INTERRUPTS; gisr++){
 		g_ext_interrupt_handlers[gisr] = invalid_global_isr;
 	}
+	setup_button_irq();
 
 	// Enable Global (PLIC) interrupts.
 	set_csr(mie, MIP_MEIP);
@@ -106,56 +181,40 @@ int main (void)
 	// Enable all interrupts
 	set_csr(mstatus, MSTATUS_MIE);
 
-	uart_init();
-
 	oled_init();
 
 	puts("Now mainloop\r\n");
 	printText("\n\n\n  Press any button\n      to exit\n");
 	sleep(2000);
+	state = MANDELBROT;
 	uint8_t ch = 0;
+	unsigned lorem_pointer = 0;
 	while (1) {
-		cls();
-		puts("Mandelbrot\r\n");
-		mandelbrot(interaction);
-
-		cls();
-		puts("Textmode\r\n");
-		printText("[ESC to exit]\n");
-		//meh
-		while(!getPin(BUTTON_2))
-			asm volatile ("nop");
-		while(!(ch = interaction()))
-			asm volatile ("nop");
-
-		cls();
-
-		while(ch != 27 && getPin(BUTTON_2))
+		switch (state)
 		{
-			if(ch > 5)
-				printChar(ch);
-			_putc(ch);		//enable echo
-			while(!(ch = interaction()))
-				asm volatile ("nop");
-		}
-
-		cls();
-		//meh
-		while(!getPin(BUTTON_2))
-			asm volatile ("nop");
-
-		puts("\r\nLoremIpsum\r\n");
-
-		unsigned lorem_pointer = 0;
-		while(!interaction())
-		{
+		case MANDELBROT:
+			mandelbrot(wait_condition);	//this may block a while
+			cls();
+			break;
+		case TEXTMODE:
+			if(_getc(&ch) > 0)
+			{
+				if(ch > 5)
+					printChar(ch);
+				_putc(ch);		//enable echo
+				if(ch == 27)
+					state = ++state%STATE_num;
+			}
+			break;
+		case LOREM:
 			printChar(lipsum[lorem_pointer]);
 			if(lorem_pointer % ((DISP_W / CHAR_W) * (DISP_H/8)) == ((DISP_W / CHAR_W) * (DISP_H/8))-1)
 				sleep(100);
 			lorem_pointer = lorem_pointer + 1 >= sizeof(lipsum) ? 0 : lorem_pointer + 1;
+			break;
+		default:
+			printText("Invalid mode\n");
+			sleep(1000);
 		}
-		//meh
-		while(!getPin(BUTTON_2))
-			asm volatile ("nop");
 	}
 }

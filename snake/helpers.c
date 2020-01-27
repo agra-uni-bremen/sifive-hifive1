@@ -113,8 +113,6 @@ void enableInterrupt(uint8_t pin, uint8_t mode)
 	default:
 		_puts("Invalid interrupt mode");
 	}
-
-
 }
 
 void setPin(uint8_t pin, uint8_t val)

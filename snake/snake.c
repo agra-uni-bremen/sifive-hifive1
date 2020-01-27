@@ -65,10 +65,12 @@ void button_handler(plic_source int_num)
 	if(int_num ==  mapPinToReg(BUTTON_D))
 	{
 		puts("BUTTON D!\r\n");
+		printText("Button down\n");
 	}
 	else if(int_num == mapPinToReg(BUTTON_U))
 	{
 		puts("BUTTON U!\r\n");
+		printText("Button Up\n");
 	}
 	else if(int_num == mapPinToReg(BUTTON_L))
 	{
@@ -85,6 +87,7 @@ void button_handler(plic_source int_num)
 	else
 	{
 		puts("Some button.\r\n");
+		printText("Some button.\n");
 	}
 	GPIO_REG(GPIO_RISE_IP) |= (1 << int_num);
 	GPIO_REG(GPIO_FALL_IP) |= (1 << int_num);
@@ -103,7 +106,6 @@ void setup_button_irq()
             PLIC_NUM_INTERRUPTS,
             PLIC_NUM_PRIORITIES);
 
-
 	for(unsigned i = 0; i < sizeof(buttons); i++)
 	{
 		setPinInputPullup(buttons[i], 1);
@@ -120,6 +122,22 @@ void handle_m_time_interrupt()
 {
 	clear_csr(mie, MIP_MTIP);
 }
+
+struct State
+{
+	enum Direction{
+		up = 0,
+		down,
+		left,
+		right
+	} direction;
+	struct Pos
+	{
+		uint8_t x;
+		uint8_t y;
+	} head, tail;
+} state;
+
 
 int main (void)
 {
@@ -138,10 +156,15 @@ int main (void)
 
 	oled_init();
 
-	puts("Now mainloop\r\n");
-	printText("\n\n\n  Press any button\n      to exit\n");
-	sleep(2000);
+	state.direction = right;
+	state.head.x = 20;
+	state.head.y = 20;
+	state.tail = state.head;
+
+	set_xy(state.head.x, state.head.y / 8);
+	spi(1 << state.head.y % 8);		//Fixme: Would need framebuffer for correct display
+
 	while (1) {
-		sleep(1000);
+		sleep(100);
 	}
 }

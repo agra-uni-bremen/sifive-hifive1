@@ -14,6 +14,10 @@ uint32_t mapPinToReg(uint8_t pin);
 void setPinOutput(uint8_t pin);
 void setPinInput(uint8_t pin);
 void setPinInputPullup(uint8_t pin, uint8_t pullup_enable);
+/**
+ * @param mode 0: rise, 1: fall, 2: high, 3: low
+ */
+void enableInterrupt(uint8_t pin, uint8_t mode);
 
 void setPin(uint8_t pin, uint8_t val);
 uint8_t getPin(uint8_t pin);

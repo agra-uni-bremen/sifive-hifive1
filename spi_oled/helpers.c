@@ -91,6 +91,31 @@ void setPinInputPullup(uint8_t pin, uint8_t pullup_enable)
 	GPIO_REG(GPIO_INPUT_EN)   |= 1 << mapPinToReg(pin);
 }
 
+
+/**
+ * @param mode 0: rise, 1: fall, 2: high, 3: low
+ */
+void enableInterrupt(uint8_t pin, uint8_t mode)
+{
+	switch(mode)
+	{
+	case 0:
+		GPIO_REG(GPIO_RISE_IE)    |= (1 << mapPinToReg(pin));
+		break;
+	case 1:
+		GPIO_REG(GPIO_FALL_IE)    |= (1 << mapPinToReg(pin));
+		break;
+	case 2:
+		GPIO_REG(GPIO_HIGH_IE)    |= (1 << mapPinToReg(pin));
+		break;
+	case 3:
+		GPIO_REG(GPIO_LOW_IE)    |= (1 << mapPinToReg(pin));
+		break;
+	default:
+		_puts("Invalid interrupt mode");
+	}
+}
+
 void setPin(uint8_t pin, uint8_t val)
 {
 	if(val)

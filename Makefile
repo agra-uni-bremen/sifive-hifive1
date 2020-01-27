@@ -8,7 +8,7 @@ projects = sevensegment \
 all: build-all
 
 define template
-pre-$(1): 
+pre-$(1):
 	cd freedom-e-sdk/software && ln -sd ../../$(1) || true
 build-$(1): pre-$(1)
 	cd freedom-e-sdk && make software PROGRAM=$(1)

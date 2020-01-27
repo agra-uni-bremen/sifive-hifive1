@@ -24,7 +24,7 @@ void mandelbrot(uint8_t (*wait_condition)(void))
     fp_t radiusx = start_radiusx;
     fp_t radiusy = start_radiusy;
     setContrast(0);
-    while (!(wait_condition)()) {
+    while ((wait_condition)()) {
     	printf("Frame %d\n", frame);
 		if (frame == 0) {
 			do {
