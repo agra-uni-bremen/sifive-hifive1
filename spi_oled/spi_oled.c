@@ -97,7 +97,7 @@ void button_handler(plic_source int_num)
 	else if(int_num == mapPinToReg(BUTTON_R))
 	{
 		puts("BUTTON R!\r\n");
-		state = ++state%STATE_num;
+		state = (state+1)%STATE_num;
 		state_changed = 1;
 	}
 	else if(int_num == mapPinToReg(BUTTON_CTR))
@@ -203,7 +203,11 @@ int main (void)
 					printChar(ch);
 				_putc(ch);		//enable echo
 				if(ch == 27)
-					state = ++state%STATE_num;
+				{
+					//clear_csr(mstatus, MSTATUS_MIE);
+					state = (state+1)%STATE_num;
+					//set_csr(mstatus, MSTATUS_MIE);
+				}
 			}
 			break;
 		case LOREM:
