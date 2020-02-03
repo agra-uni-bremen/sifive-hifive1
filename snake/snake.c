@@ -15,7 +15,9 @@
 #include "oled_shield.h"
 #include "font.h"
 #include "display.h"
+#include "framebuffer.h"
 
+#define MAX_SNAKE_LENGTH 64
 
 const uint8_t buttons[] =
 {
@@ -123,21 +125,34 @@ void handle_m_time_interrupt()
 	clear_csr(mie, MIP_MTIP);
 }
 
-struct State
-{
+struct State{
 	enum Direction{
 		up = 0,
 		down,
 		left,
 		right
 	} direction;
-	struct Pos
-	{
-		uint8_t x;
-		uint8_t y;
-	} head, tail;
+	uint8_t length;
 } state;
 
+struct Snakesegment
+{
+	uint8_t x, y;
+};
+struct Snakesegment snake[MAX_SNAKE_LENGTH];
+
+void reset_state()
+{
+	state.direction = left;
+	state.length = 4;
+	memset(snake, 0, sizeof(struct Snakesegment) * sizeof(snake));
+	for(unsigned i = 0; i < state.length; i++)
+	{
+		snake[i].y = DISP_H/2;
+		snake[i].x = (DISP_W/2)+i;
+		fb_set_pixel(snake[i].x, snake[i].y, 1);
+	}
+}
 
 int main (void)
 {
@@ -155,14 +170,7 @@ int main (void)
 	set_csr(mstatus, MSTATUS_MIE);
 
 	oled_init();
-
-	state.direction = right;
-	state.head.x = 20;
-	state.head.y = 20;
-	state.tail = state.head;
-
-	set_xy(state.head.x, state.head.y / 8);
-	spi(1 << state.head.y % 8);		//Fixme: Would need framebuffer for correct display
+	fb_init();
 
 	while (1) {
 		sleep(100);

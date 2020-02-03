@@ -209,14 +209,14 @@ void set_x(unsigned col)
     spi(0x10 | (((col+DISP_W_OFFS) >> 4)&0xf));
     mode_data();
 }
-void set_y(unsigned row)
+void set_row(unsigned row)
 {
     mode_cmd();
     spi(0xb0 | (row & 0x7));
     mode_data();
 }
 
-void set_xy(unsigned col, unsigned row)
+void set_xrow(unsigned col, unsigned row)
 {
     mode_cmd();
     spi(0x00 | ((col+DISP_W_OFFS) & 0xf));
@@ -228,11 +228,11 @@ void set_xy(unsigned col, unsigned row)
 void oled_clear(void)
 {
 	for (unsigned y = 0; y < DISP_H/8; ++y) {
-    	set_xy(0, y);
+    	set_xrow(0, y);
 		for (unsigned x=0; x < DISP_W; ++x) {
     		spi(0x00);
     	}
     }
-	set_xy(0,0);
+	set_xrow(0,0);
 }
 

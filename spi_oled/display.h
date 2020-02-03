@@ -45,8 +45,8 @@ void fadeIn(uint64_t millis);
 void fadeOut(uint64_t millis);
 
 void set_x(unsigned col);
-void set_y(unsigned row);
-void set_xy(unsigned col, unsigned row);
+void set_row(unsigned row);
+void set_xrow(unsigned col, unsigned row);
 /** clear (visible portion of) screen, reset pointers */
 void oled_clear(void);
 

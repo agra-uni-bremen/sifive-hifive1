@@ -1,5 +1,5 @@
 TARGET = snake
-C_SRCS += snake.c helpers.c display.c font.c
+C_SRCS += snake.cpp helpers.c display.c font.c
 CFLAGS += -O1 -fno-builtin-printf -DUSE_PLIC -DUSE_M_TIME
 
 BSP_BASE = ../../bsp

@@ -93,6 +93,8 @@ void button_handler(plic_source int_num)
 	else if(int_num == mapPinToReg(BUTTON_L))
 	{
 		puts("BUTTON L!\r\n");
+		state = (state+STATE_num-1)%STATE_num;
+		state_changed = 1;
 	}
 	else if(int_num == mapPinToReg(BUTTON_R))
 	{
@@ -181,6 +183,7 @@ int main (void)
 	// Enable all interrupts
 	set_csr(mstatus, MSTATUS_MIE);
 
+	uart_init();
 	oled_init();
 
 	puts("Now mainloop\r\n");

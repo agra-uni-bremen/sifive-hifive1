@@ -46,7 +46,7 @@ void mandelbrot(uint8_t (*wait_condition)(void))
 		uint8_t none = 0xff;
 		uint8_t any = 0x00;
 		for (int row=0; row<DISP_H/8; ++row) {
-			set_xy(0, row);
+			set_xrow(0, row);
 			for (int x=0; x<DISP_W; ++x) {
 				uint8_t byte = 0;
 				for (int yi=0; yi<8; ++yi) {

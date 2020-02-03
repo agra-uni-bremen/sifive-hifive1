@@ -153,7 +153,7 @@ void newline()
     col = 0;
     /* Go to next row */
     row = (row + 1)%(DISP_H/2);
-    set_xy(0, row);
+    set_xrow(0, row);
     /* Clear it */
     for (unsigned x=0; x<DISP_W; ++x) {
         spi(0);
@@ -196,7 +196,7 @@ void cls()
 	oled_clear();
 	row = 0;
 	col = 0;
-	set_xy(0,0);
+	set_xrow(0,0);
 }
 
 void printText(const char* text)

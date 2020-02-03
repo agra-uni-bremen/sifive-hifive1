@@ -147,7 +147,7 @@ void printGPIOs()
 
 void sleep_u(uint64_t micros)
 {
-    volatile uint64_t *  now = (volatile uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIME);
+    volatile uint64_t * now = (volatile uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIME);
     volatile uint64_t then = *now + ((micros * RTC_FREQ) / (1000 * 1000));
     while (*now < then){}
 }
