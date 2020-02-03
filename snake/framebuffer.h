@@ -14,4 +14,6 @@ void fb_init();
 void fb_flush();
 
 void fb_set_pixel(uint8_t x, uint8_t y, uint8_t p);
+void fb_set_pixel_direct(uint8_t x, uint8_t y, uint8_t p);
 uint8_t fb_get_pixel(uint8_t x, uint8_t y);
+

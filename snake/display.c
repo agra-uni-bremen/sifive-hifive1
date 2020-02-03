@@ -188,9 +188,6 @@ void oled_init()
     // Command mode
 	mode_cmd();
 
-    // FIXME: To see the bug better. Normally, this is the last thing to do.
-    setDisplayOn(1);
-
 	// Initialize display to desired operating mode.
 
     setChargePumpVoltage(0b10);
@@ -200,6 +197,8 @@ void oled_init()
 
     // 4. Clear screen (entire memory)
     oled_clear();
+
+    setDisplayOn(1);
 }
 
 void set_x(unsigned col)
