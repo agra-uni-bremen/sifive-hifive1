@@ -154,10 +154,18 @@ uint8_t get_random_number()
 
 void spawn_food()
 {
-	//FIXME: Food may be spawned inside snake :(
-	state.food.x = get_random_number()%DISP_W;
-	state.food.y = get_random_number()%DISP_H;
-	state.food.valid = 1;
+	while(!state.food.valid)
+	{
+		state.food.x = get_random_number()%DISP_W;
+		state.food.y = get_random_number()%DISP_H;
+		
+		state.food.valid = 1;
+		for(unsigned i = 0; i < state.length; i++)
+		{
+			if(snake[i].x == state.food.x && snake[i].y == state.food.y)
+				state.food.valid = 0;
+		}
+	}
 	fb_set_pixel_direct(state.food.x, state.food.y, 1);
 	printf("New food at %u %u\n", state.food.x, state.food.y);
 }
@@ -258,7 +266,7 @@ int main (void)
 		reset_state();
 		while(snake_step() && state.length < MAX_SNAKE_LENGTH)
 		{
-			sleep((MAX_SNAKE_LENGTH - state.length) / 2);	//gradient
+			sleep(1 + ((MAX_SNAKE_LENGTH - state.length) * (MAX_SNAKE_LENGTH - state.length)) /  MAX_SNAKE_LENGTH);	//gradient
 			if(!state.food.valid && (get_random_number() > 0x0F))
 			{
 				spawn_food();
