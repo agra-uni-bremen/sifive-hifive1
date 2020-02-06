@@ -211,6 +211,8 @@ void think()
 			struct Snakesegment future = snake[0];
 			future.x += state.nextDirection == left ? -1 : state.nextDirection == right ? 1 : 0;
 			future.y += state.nextDirection == down ? 1 : state.nextDirection == up ? -1 : 0;
+			future.x %= DISP_W;
+			future.y %= DISP_H;
 
 			for(uint8_t i = 1; i < state.length; i++)
 			{
@@ -221,7 +223,7 @@ void think()
 				}
 			}
 			if(goingToHit)
-		        {
+			{
 				//printf("Direction %d at try %d is not ok\n", state.nextDirection, tries);
 				state.nextDirection++;
 				state.nextDirection = state.nextDirection%4;
