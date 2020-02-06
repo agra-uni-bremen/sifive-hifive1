@@ -18,6 +18,7 @@
 #include "framebuffer.h"
 
 #define MAX_SNAKE_LENGTH 128
+#define MAX_DELAY 100
 
 const uint8_t buttons[] =
 {
@@ -41,8 +42,9 @@ struct State{
 		down,
 		left,
 		right
-	} direction;
+	} direction, nextDirection;
 	uint8_t length;
+	uint8_t intelligent;
 	struct Food food;
 } state;
 
@@ -85,27 +87,30 @@ void handle_m_ext_interrupt()
 
 void button_handler(plic_source int_num)
 {
-	//FIXME: If pressed in same tick, we may flow into usself
 	int_num -= INT_GPIO_BASE;
 	if(int_num ==  mapPinToReg(BUTTON_D))
 	{
 		if(state.direction != up)
-			state.direction = down;
+			state.nextDirection = down;
 	}
 	else if(int_num == mapPinToReg(BUTTON_U))
 	{
 		if(state.direction != down)
-			state.direction = up;
+			state.nextDirection = up;
 	}
 	else if(int_num == mapPinToReg(BUTTON_L))
 	{
 		if(state.direction != right)
-			state.direction = left;
+			state.nextDirection = left;
 	}
 	else if(int_num == mapPinToReg(BUTTON_R))
 	{
 		if(state.direction != left)
-			state.direction = right;
+			state.nextDirection = right;
+	}
+	else if(int_num == mapPinToReg(BUTTON_A))
+	{
+		state.intelligent ^= 1;
 	}
 	else
 	{
@@ -170,10 +175,42 @@ void spawn_food()
 	printf("New food at %u %u\n", state.food.x, state.food.y);
 }
 
+void think()
+{
+	if(state.food.valid)
+	{
+		int diffx = state.food.x - snake[0].x;
+		int diffy = state.food.y - snake[0].y;
+
+		//Favor the current direction
+		if(((state.direction == left || state.direction == right)
+			&& abs(diffx) > 0) || diffy == 0)
+		{
+			if(diffx > 0)
+				if(state.direction != left)
+					state.nextDirection = right;
+			if(diffx < 0)
+				if(state.direction != right)
+					state.nextDirection = left;
+		}
+		else
+		{
+			if(diffy > 0)
+				if(state.direction != up)
+					state.nextDirection = down;
+			if(diffy < 0)
+				if(state.direction != down)
+					state.nextDirection = up;
+		}
+	}
+}
+
 void reset_state()
 {
 	state.direction = left;
+	state.nextDirection = left;
 	state.length = 10;
+	state.intelligent = 0;
 	spawn_food();
 	memset(snake, 0, sizeof(struct Snakesegment) * MAX_SNAKE_LENGTH);
 	for(unsigned i = 0; i < state.length; i++)
@@ -188,6 +225,7 @@ void reset_state()
 uint8_t snake_step()
 {
 	struct Snakesegment buf = snake[0];
+	state.direction = state.nextDirection;
 	switch (state.direction)
 	{
 	case up:
@@ -243,6 +281,16 @@ uint8_t snake_step()
 }
 
 
+void delayDifficulty()
+{
+	//Progress from 1 to 0
+	float progress = ((float)(MAX_SNAKE_LENGTH - state.length))/MAX_SNAKE_LENGTH;
+	if(state.intelligent)
+		progress /= 2;
+	sleep(1 + progress * MAX_DELAY);
+}
+
+
 int main (void)
 {
 	_init();
@@ -266,11 +314,13 @@ int main (void)
 		reset_state();
 		while(snake_step() && state.length < MAX_SNAKE_LENGTH)
 		{
-			sleep(1 + ((MAX_SNAKE_LENGTH - state.length) * (MAX_SNAKE_LENGTH - state.length)) /  MAX_SNAKE_LENGTH);	//gradient
+			delayDifficulty();
 			if(!state.food.valid && (get_random_number() > 0x0F))
 			{
 				spawn_food();
 			}
+			if(state.intelligent)
+				think();
 		}
 		fadeOut(1000);
 		oled_clear();
