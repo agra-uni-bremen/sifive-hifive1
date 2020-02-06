@@ -17,7 +17,7 @@
 #include "display.h"
 #include "framebuffer.h"
 
-#define MAX_SNAKE_LENGTH 128
+#define MAX_SNAKE_LENGTH 256
 #define MAX_DELAY 100
 
 const uint8_t buttons[] =
@@ -182,9 +182,8 @@ void think()
 		int diffx = state.food.x - snake[0].x;
 		int diffy = state.food.y - snake[0].y;
 
-		//Favor the current direction
-		if(((state.direction == left || state.direction == right)
-			&& abs(diffx) > 0) || diffy == 0)
+		state.nextDirection = state.direction;
+		if(abs(diffx) > 0)
 		{
 			if(diffx > 0)
 				if(state.direction != left)
@@ -202,6 +201,33 @@ void think()
 				if(state.direction != down)
 					state.nextDirection = up;
 		}
+		for(unsigned tries = 0; tries < 5; tries++)
+		{
+			int goingToHit = 0;
+			struct Snakesegment future = snake[0];
+			future.x += state.nextDirection == left ? -1 : state.nextDirection == right ? 1 : 0;
+			future.y += state.nextDirection == down ? 1 : state.nextDirection == up ? -1 : 0;
+
+			for(uint8_t i = 1; i < state.length; i++)
+			{
+				if(snake[i].x == future.x && snake[i].y == future.y)
+				{
+					goingToHit = 1;
+					break;
+				}
+			}
+			if(goingToHit)
+		        {
+				//printf("Direction %d at try %d is not ok\n", state.nextDirection, tries);
+				state.nextDirection++;
+				state.nextDirection = state.nextDirection%4;
+			}
+			else
+			{
+				//printf("Direction %d at try %d is     ok\n", state.nextDirection, tries);
+				break;
+			}
+		}
 	}
 }
 
@@ -210,7 +236,7 @@ void reset_state()
 	state.direction = left;
 	state.nextDirection = left;
 	state.length = 10;
-	state.intelligent = 0;
+	state.intelligent = 1;
 	spawn_food();
 	memset(snake, 0, sizeof(struct Snakesegment) * MAX_SNAKE_LENGTH);
 	for(unsigned i = 0; i < state.length; i++)
