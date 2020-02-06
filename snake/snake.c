@@ -181,9 +181,9 @@ void think()
 	{
 		int diffx = state.food.x - snake[0].x;
 		int diffy = state.food.y - snake[0].y;
-		if(diffy > DISP_H/2)
+		if(abs(diffy) > DISP_H/2)
 			diffy *= -1;
-		if(diffx > DISP_W/2)
+		if(abs(diffx) > DISP_W/2)
 			diffx *= -1;
 
 		state.nextDirection = state.direction;
