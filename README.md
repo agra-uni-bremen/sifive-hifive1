@@ -96,3 +96,8 @@ Zephyr uses with the philosophers demo:
 		         ROM:       22960 B        12 MB      0.18%
 		         RAM:        9440 B        16 KB     57.62%
 		    IDT_LIST:         553 B         2 KB     27.00%
+
+		    
+#### Acknowledgements:
+
+This work was supported in part by the German Federal Ministry of Education and Research (BMBF) within the project SATiSFy under contract no. 16KIS0821K.
