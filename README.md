@@ -1,35 +1,34 @@
 How to build bare metal applications on HiFive1-Board
 =====================================================
 
+This Repository contains some software examples for use with the HiFive1-Board of SiFive and our binary-compatible [Riscv-VP](systemc-verification.org/riscv-vp) ([repo](https://github.com/agra-uni-bremen/riscv-vp)).
+Here, an old version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-sdk) of SiFive is pinned and used for buildin/uploading programs.
+
 1) Prerequisites on ubuntu (see *https://github.com/sifive/freedom-e-sdk*):
 
 	`sudo apt-get install autoconf automake libmpc-dev libmpfr-dev libgmp-dev gawk bison flex texinfo libtool libusb-1.0-0-dev make g++ pkg-config libexpat1-dev zlib1g-dev`
 
-2) Clone and update the *sifive--hifive1* repository:
+1) Clone and update the *sifive--hifive1* repository:
 
 	```bash
-	git clone git@gitlab.informatik.uni-bremen.de:ppieper/sifive--hifive1.git
-	cd sifive--hifive1
-
 	cd freedom-e-sdk
 	git submodule update --init --recursive        # may take some time
 	```
 
-3) Either build toolchain included in the freedom-e-sdk or Download and unpack the pre-build *riscv-multilib* toolchain available from:
+1) Either build toolchain included in the freedom-e-sdk or Download and unpack the pre-build *riscv-multilib* toolchain available from:
 
 	http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
-
-
-4) make sure that the env variable RISCV_PATH is pointing to your toolchain-dir (without `/bin`)
-
+	
+	And make sure that the env variable RISCV_PATH is pointing to your toolchain-dir (without `/bin`)
+	
 	example: `export RISCV_PATH="/opt/riscv"`
 
-5) Build openocd (if you want to load a program on the board) in *sifive--hifive1/freedom-e-sdk/*:
+1) Build openocd (if you want to load a program on the board) in *sifive--hifive1/freedom-e-sdk/*:
 
 	`make openocd						# need only to be done once`
 
 
-6) Build and upload a program to the board:
+1) Build and upload a program to the board:
 
 	```bash
 	make upload-snake
@@ -39,8 +38,7 @@ How to build bare metal applications on HiFive1-Board
 	make sim-snake
 	```
 
-
-7) Show program output:
+1) Show program output:
 
 	`screen /dev/ttyUSB1 115200`
 
