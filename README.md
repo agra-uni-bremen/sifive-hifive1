@@ -15,16 +15,16 @@ How to build bare metal applications on HiFive1-Board
 	git submodule update --init --recursive        # may take some time
 	```
 
-3) Download and unpack the pre-build *riscv-multilib* toolchain available from:
+3) Either build toolchain included in the freedom-e-sdk or Download and unpack the pre-build *riscv-multilib* toolchain available from:
 
-	http://raws13/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
+	http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
 
 
 4) make sure that the env variable RISCV_PATH is pointing to your toolchain-dir (without `/bin`)
 
 	example: `export RISCV_PATH="/opt/riscv"`
 
-5) Build openocd (to load a program on the board) in *sifive--hifive1/freedom-e-sdk/*:
+5) Build openocd (if you want to load a program on the board) in *sifive--hifive1/freedom-e-sdk/*:
 
 	`make openocd						# need only to be done once`
 
@@ -32,9 +32,13 @@ How to build bare metal applications on HiFive1-Board
 6) Build and upload a program to the board:
 
 	```bash
-	make software PROGRAM=hello	BOARD=freedom-e300-hifive1		# replace hello with other programs accordingly (e.g. *fade_led*, etc., see *software* folder)
-	sudo make upload PROGRAM=hello		# may not be necessary to use _sudo_, see the *sifive--hifive1/doc/hifive1-getting-started-v1.0.2.pdf* on additional details
+	make upload-snake
 	```
+   Optional: If you have the `hifive-vp` from the [riscv-vp](https://github.com/agra-uni-bremen/riscv-vp) repository in your path, you may also start the simulation by typing
+	```bash
+	make sim-snake
+	```
+
 
 7) Show program output:
 
@@ -47,11 +51,6 @@ In case screen does not work use (this may happen when running screen a second t
 Press the reset button on the board to restart (and thus see output).
 NOTE: /dev/ttyUSB0 is the debug interface.
 
-
-Disable compressed instructions:
---------------------------------
-
-In *sifive--hifive1/freedom-e-sdk/bsp/env/freedom-e300-hifive1/* open *setting.mk* and set *RISCV_ARCH := rv32im* (set to rv32imac to re-enable). NOTE: *RISCV_ARCH := rv32ima* might also be possible, however the RISC-V multilib toolchain seems to not support it for now!?
 
 
 ZEPHYR OS
