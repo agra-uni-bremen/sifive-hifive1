@@ -12,6 +12,8 @@
 #define BLUE_LED 5
 #define RED_LED 6
 
+extern void _init();
+
 static void _putc(char c) {
   while ((int32_t) UART0_REG(UART_REG_TXFIFO) < 0);
   UART0_REG(UART_REG_TXFIFO) = c;
@@ -176,6 +178,7 @@ void invalid_local_isr() {
 
 int main (void)
 {
+	_init();
 	_puts("Config String:\n\r");
 	_puts(*((const char **) 0x100C));
 	_puts("\n\r");
