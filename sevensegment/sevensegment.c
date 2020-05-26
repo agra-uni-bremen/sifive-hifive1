@@ -8,6 +8,8 @@
 #include "plic/plic_driver.h"
 #include "encoding.h"	//For CSRs
 
+extern void _init();
+
 static const char led_msg[] = "\a\n\r\n\r\
 55555555555555555555555555555555555555555555555\n\r\
 555555 Are able to press Buttons? [y/n]  555555\n\r\
@@ -298,6 +300,7 @@ void invalid_local_isr() {
 
 int main (void)
 {
+	_init();
 	_puts(sifive_msg);
 	_puts("Config String:\n\r");
 	_puts(*((const char **) 0x100C));
