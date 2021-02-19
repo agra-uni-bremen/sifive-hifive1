@@ -5,6 +5,3 @@
 [submodule "zephyr"]
 	path = zephyr
 	url = https@github.com:zephyrproject-rtos/zephyr.git
-[submodule "spi_can/CAN_BUS_Shield"]
-	path = spi_can/CAN_BUS_Shield
-	url = git@github.com:agra-uni-bremen/CAN_BUS_Shield.git
