@@ -12,7 +12,7 @@ Here, an old version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-
 
 	```bash
 	cd freedom-e-sdk
-	git submodule update --init
+	git submodule update --init --recursive
 	```
 
 1) Build your own toolchain or download and unpack a pre-build *riscv-multilib* toolchain, e.g. available from:
