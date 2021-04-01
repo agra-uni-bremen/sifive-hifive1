@@ -8,7 +8,7 @@ Here, an old version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-
 
 	`sudo apt-get install autoconf automake libmpc-dev libmpfr-dev libgmp-dev gawk bison flex texinfo libtool libusb-1.0-0-dev make g++ pkg-config libexpat1-dev zlib1g-dev`
 
-1) Clone and update the *sifive--hifive1* repository:
+2) Clone and update the *sifive--hifive1* repository:
 
 	```bash
 	git clone https://github.com/agra-uni-bremen/sifive-hifive1
@@ -16,32 +16,33 @@ Here, an old version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-
 	git submodule update --init --recursive # may take a bit
 	```
 
-1) a) Download and unpack a pre-build *riscv-multilib* toolchain, e.g. available from:
+3)
+    a) Download and unpack a pre-build *riscv-multilib* toolchain, e.g. available from:
 
 	http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
 	And make sure that the env variable RISCV_PATH is pointing to your toolchain-dir (without `/bin`)
 	
 	example:
-	````bash
+	```bash
 	wget http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
 	tar xzf latest-gnu-toolchain_riscv-multilib.tar.gz
 	sudo mv riscv-multilib /opt
 	export RISCV_PATH="/opt/riscv-multilib" #  you may add this line to your .bashrc
 	```
 
-1) b) Or build the toolchain directly:
+    b) Or build the toolchain directly:
 
 	```bash
 	cd freedom-e-sdk
 	make riscv-gnu-toolchain -j$(nproc) # may take a bit
 	```
 
-1) Build openocd (if you want to load a program on the real board) in *sifive--hifive1/freedom-e-sdk/*:
+4) Build openocd (if you want to load a program on the real board) in *sifive--hifive1/freedom-e-sdk/*:
 
 	`make openocd # need only to be done once`
 
 
-1) Build and upload a program to the board:
+5) Build and upload a program to the board:
 
 	```bash
 	make upload-snake
@@ -51,7 +52,7 @@ Here, an old version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-
 	make sim-snake
 	```
 
-1) Show program output:
+6) Show program output:
 
 	`screen /dev/ttyUSB1 115200`
 
