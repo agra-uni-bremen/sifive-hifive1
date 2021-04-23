@@ -16,7 +16,7 @@ Here, an old version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-
 	git submodule update --init --recursive # may take a bit
 	```
 
-3)
+3) Either:
     a) Download and unpack a pre-build *riscv-multilib* toolchain, e.g. available from:
 
 	http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
