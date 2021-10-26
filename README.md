@@ -47,7 +47,7 @@ Here, an old version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-
 	```bash
 	make upload-snake
 	```
-   Optional: If you have the `hifive-vp` from the [riscv-vp](https://github.com/agra-uni-bremen/riscv-vp) repository in your path, you may also start the simulation by typing
+   Optional: If you have the `hifive-vp` from the [riscv-vp](https://github.com/agra-uni-bremen/riscv-vp) repository in your `$PATH`, you may also start the simulation by typing
 	```bash
 	make sim-snake
 	```
