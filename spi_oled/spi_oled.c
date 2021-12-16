@@ -192,12 +192,14 @@ int main (void)
 	state = MANDELBROT;
 	uint8_t ch = 0;
 	unsigned lorem_pointer = 0;
-	while (1) {
+    
+	//while (1) {
 		switch (state)
 		{
 		case MANDELBROT:
 			mandelbrot(wait_condition);	//this may block a while
 			cls();
+			state = TEXTMODE;
 			break;
 		case TEXTMODE:
 			if(_getc(&ch) > 0)
@@ -223,5 +225,5 @@ int main (void)
 			printText("Invalid mode\n");
 			sleep(1000);
 		}
-	}
+	//}
 }

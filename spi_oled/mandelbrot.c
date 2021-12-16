@@ -6,6 +6,7 @@
  */
 #include "mandelbrot.h"
 #include "display.h"
+#include "helpers.h"
 
 /* Is a point on the mandelbrot set interesting to zoom in on? */
 int interesting(fp_t x, fp_t y)
@@ -24,7 +25,12 @@ void mandelbrot(uint8_t (*wait_condition)(void))
     fp_t radiusx = start_radiusx;
     fp_t radiusy = start_radiusy;
     setContrast(0);
-    while ((wait_condition)()) {
+    
+    uint64_t later = getTime_ms() + 20000;
+    
+    while ((getTime_ms() < later) && (wait_condition)()) {
+    	printf("%d ms ",getTime_ms());
+    	printf("waiting for %d\n",later);
     	printf("Frame %d\n", frame);
 		if (frame == 0) {
 			do {

@@ -157,6 +157,11 @@ void sleep(uint64_t millis)
     sleep_u(millis * 1000);
 }
 
+uint64_t getTime_ms()
+{
+    return (1000 * (*(volatile uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIME)))/RTC_FREQ;
+}
+
 void setTimer(uint32_t millis)
 {
 	//printf("Timer in %u ms\n", millis);

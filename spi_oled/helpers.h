@@ -26,6 +26,7 @@ void printGPIOs();
 
 void sleep_u(uint64_t micros);
 void sleep(uint64_t millis);
+uint64_t getTime_ms();
 
 void setTimer(uint32_t millis);
 
