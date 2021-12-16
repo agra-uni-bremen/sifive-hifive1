@@ -1,0 +1,25 @@
+diff --git a/bsp/libwrap/sys/_exit.c b/bsp/libwrap/sys/_exit.c
+index 011464f..f9feda6 100644
+--- a/bsp/libwrap/sys/_exit.c
++++ b/bsp/libwrap/sys/_exit.c
+@@ -6,12 +6,19 @@
+ 
+ void __wrap_exit(int code)
+ {
+-  const char message[] = "\nProgam has exited with code:";
++  const char message[] = "\nProgam has exited with code ";
+ 
+   write(STDERR_FILENO, message, sizeof(message) - 1);
+   write_hex(STDERR_FILENO, code);
+   write(STDERR_FILENO, "\n", 1);
+ 
++  __asm__(
++    "li   a7, 93\n"   // syscall_exit
++    "li   a0, 0\n"    // value: 0
++    "li   t0, 0x02010000\n" // Syscall handler
++    "csrr a6, 0\n"          // core 0
++    "sw   a6, 0(t0)\n"      // do it
++  );
+   for (;;);
+ }
+ weak_under_alias(exit);
