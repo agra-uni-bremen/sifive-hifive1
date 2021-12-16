@@ -32,6 +32,7 @@ freedom-e-sdk/software:
 
 env:
     ifneq ("$(shell which riscv64-unknown-elf-gcc)","")
+	# TODO: Add check if riscv64-compiler is actually multilib
 	@echo "existing compiler found"
 	export RISCV_PATH="$(shell dirname $(shell which riscv64-unknown-elf-gcc))/../"
 	@echo "if this ->$(shell echo $$RISCV_PATH)<- is empty, then just copy/paste the expression into your terminal. Makefiles are hard."
