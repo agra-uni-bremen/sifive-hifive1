@@ -191,37 +191,13 @@ int main (void)
 	sleep(2000);
 	state = MANDELBROT;
 	uint8_t ch = 0;
-	unsigned lorem_pointer = 0;
-	while (1) {
-		switch (state)
-		{
-		case MANDELBROT:
-			mandelbrot(wait_condition);	//this may block a while
-			cls();
-			break;
-		case TEXTMODE:
-			if(_getc(&ch) > 0)
-			{
-				if(ch > 5)
-					printChar(ch);
-				_putc(ch);		//enable echo
-				if(ch == 27)
-				{
-					//clear_csr(mstatus, MSTATUS_MIE);
-					state = (state+1)%STATE_num;
-					//set_csr(mstatus, MSTATUS_MIE);
-				}
-			}
-			break;
-		case LOREM:
-			printChar(lipsum[lorem_pointer]);
-			if(lorem_pointer % ((DISP_W / CHAR_W) * (DISP_H/8)) == ((DISP_W / CHAR_W) * (DISP_H/8))-1)
-				sleep(100);
-			lorem_pointer = lorem_pointer + 1 >= sizeof(lipsum) ? 0 : lorem_pointer + 1;
-			break;
-		default:
-			printText("Invalid mode\n");
-			sleep(1000);
-		}
+
+	mandelbrot(wait_condition);	//this may block a while
+	cls();
+	
+	for(unsigned i = 0; i < sizeof(lipsum); i++){
+		printChar(lipsum[i]);
+		if(i % ((DISP_W / CHAR_W) * (DISP_H/8)) == ((DISP_W / CHAR_W) * (DISP_H/8))-1)
+			sleep(100);
 	}
 }

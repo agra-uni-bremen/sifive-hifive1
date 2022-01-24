@@ -24,7 +24,7 @@ void mandelbrot(uint8_t (*wait_condition)(void))
     fp_t radiusx = start_radiusx;
     fp_t radiusy = start_radiusy;
     setContrast(0);
-    while ((wait_condition)()) {
+    while (frame < 40) {
     	printf("Frame %d\n", frame);
 		if (frame == 0) {
 			do {
@@ -81,13 +81,6 @@ void mandelbrot(uint8_t (*wait_condition)(void))
 		}
 		if(frame == 0)
 			fadeIn(500);
-		if (any == 0x00 || none == 0xff) {
-			/* If screen empty or full, restart */
-			if(none == 0xff)
-				fadeOut(500);
-			frame = 0;
-			continue;
-		}
 		frame += 1;
 		radiusx = (radiusx * (ZOOM_MUL-1))/ZOOM_MUL;
 		radiusy = (radiusy * (ZOOM_MUL-1))/ZOOM_MUL;
