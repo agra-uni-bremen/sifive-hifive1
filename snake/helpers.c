@@ -70,9 +70,9 @@ uint32_t mapPinToReg(uint8_t pin)
 
 void setPinOutput(uint8_t pin)
 {
-	GPIO_REG(GPIO_INPUT_EN) &= ~(1 << mapPinToReg(pin));
-	GPIO_REG(GPIO_OUTPUT_EN) |= 1 << mapPinToReg(pin);
-	GPIO_REG(GPIO_OUTPUT_VAL) &= ~(1 << mapPinToReg(pin));
+	GPIO_REG(GPIO_INPUT_EN)  &= ~(1 << mapPinToReg(pin));
+	GPIO_REG(GPIO_OUTPUT_VAL)&= ~(1 << mapPinToReg(pin));
+	GPIO_REG(GPIO_OUTPUT_EN) |=   1 << mapPinToReg(pin);
 }
 
 void setPinInput(uint8_t pin)

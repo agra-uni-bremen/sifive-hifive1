@@ -135,7 +135,6 @@ void setup_button_irq()
 	for(unsigned i = 0; i < sizeof(buttons); i++)
 	{
 		setPinInputPullup(buttons[i], 1);
-		//enableInterrupt(buttons[i], 0);	//rise necessary?
 		enableInterrupt(buttons[i], 1);	//fall
 	    PLIC_enable_interrupt (&g_plic, INT_GPIO_BASE + mapPinToReg(buttons[i]));
 	    PLIC_set_priority(&g_plic, INT_GPIO_BASE + mapPinToReg(buttons[i]), 2+i);
