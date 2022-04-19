@@ -1,0 +1,97 @@
+
+        SystemC 2.3.3-Accellera --- Apr 19 2022 16:56:02
+        Copyright (c) 1996-2018 by all Contributors,
+        ALL RIGHTS RESERVED
+core freq at 1776025 Hz
+Inited button 3
+Inited button 4
+Inited button 5
+Inited button 6
+Inited button 7
+Inited button 18
+Inited button 19
+Now mainloop
+Frame 0
+Frame 1
+Frame 2
+Frame 3
+Frame 4
+Frame 5
+Frame 6
+Frame 7
+Frame 8
+Frame 9
+Frame 10
+Frame 11
+Frame 12
+Frame 13
+Frame 14
+Frame 15
+Frame 16
+Frame 17
+Frame 18
+Frame 19
+Frame 20
+Frame 21
+Frame 22
+Frame 23
+Frame 24
+Frame 25
+Frame 26
+Frame 27
+Frame 28
+Frame 29
+Frame 30
+Frame 31
+Frame 32
+Frame 33
+Frame 34
+Frame 35
+Frame 36
+Frame 37
+Frame 38
+Frame 39
+
+Progam has exited with code 0x00000000
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+=[ core : 0 ]===========================
+simulation time: 2699298370 ns
+zero (x0) =        0
+ra   (x1) = 20401416
+sp   (x2) = 80003fb0
+gp   (x3) = 80000860
+tp   (x4) =        0
+t0   (x5) =  2010000
+t1   (x6) =        0
+t2   (x7) = e11e1b7a
+s0/fp(x8) =        0
+s1   (x9) =        0
+a0  (x10) =        0
+a1  (x11) = 20403555
+a2  (x12) =        d
+a3  (x13) = 20403555
+a4  (x14) = 10013000
+a5  (x15) =        0
+a6  (x16) =        0
+a7  (x17) =       5d
+s2  (x18) =        0
+s3  (x19) =        0
+s4  (x20) =        0
+s5  (x21) =        0
+s6  (x22) =        0
+s7  (x23) =        0
+s8  (x24) =        0
+s9  (x25) =        0
+s10 (x26) =        0
+s11 (x27) =        0
+t3  (x28) = 10e9f3c1
+t4  (x29) = 7a220604
+t5  (x30) =    87305
+t6  (x31) =     73a3
+pc = 20401428
+num-instr = 79392338
+
+real	0m27.224s
+user	0m27.113s
+sys	0m0.088s
