@@ -56,7 +56,7 @@ core freq at 1776025 Hz
 
 Info: /OSCI/SystemC: Simulation stopped by user.
 =[ core : 0 ]===========================
-simulation time: 2699298370 ns
+simulation time: 2699239960 ns
 zero (x0) =        0
 ra   (x1) = 20401416
 sp   (x2) = 80003fb0
@@ -90,8 +90,8 @@ t4  (x29) = 7a220604
 t5  (x30) =    87305
 t6  (x31) =     73a3
 pc = 20401428
-num-instr = 79392338
+num-instr = 79390667
 
-real	0m27.224s
-user	0m27.113s
-sys	0m0.088s
+real	0m28.240s
+user	0m29.727s
+sys	0m0.368s
