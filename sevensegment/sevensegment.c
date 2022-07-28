@@ -306,7 +306,7 @@ int main (void)
 	_puts(*((const char **) 0x100C));
 	_puts("\n\r");
 	_puts(led_msg);
-
+	_init();
 
 	char c = 0;
 	uint8_t counter = 0;
