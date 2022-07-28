@@ -17,7 +17,7 @@
 #include "display.h"
 #include "framebuffer.h"
 
-#define MAX_SNAKE_LENGTH 256
+#define MAX_SNAKE_LENGTH 1024
 #define MAX_DELAY 100
 
 const uint8_t buttons[] =
@@ -36,6 +36,23 @@ struct Food{
 	uint8_t valid;
 };
 
+enum Intelligence {
+	i_none = 0,
+	i_bold,
+	i_safe,
+	i_drunk,
+	i_num
+};
+
+const char* intelligence_names[] = {
+	"Human",
+	"bold",
+	"safe",
+	"drunk",
+	"NUM"
+};
+
+
 struct State{
 	enum Direction{
 		up = 0,
@@ -43,11 +60,11 @@ struct State{
 		left,
 		right
 	} direction, nextDirection;
-	uint8_t length;
-	uint8_t intelligent;
+	uint16_t length;
+	enum Intelligence intelligent;
 	struct Food food;
 } state;
-
+uint8_t nodelay = 0;
 struct Snakesegment
 {
 	uint8_t x, y;
@@ -110,7 +127,14 @@ void button_handler(plic_source int_num)
 	}
 	else if(int_num == mapPinToReg(BUTTON_A))
 	{
-		state.intelligent ^= 1;
+		state.intelligent++;
+		state.intelligent %= i_num;
+		printf("Switched snake intelligence to %s\n",
+		       intelligence_names[state.intelligent]);
+	}
+	else if(int_num == mapPinToReg(BUTTON_B))
+	{
+		nodelay ^= 1;
 	}
 	else
 	{
@@ -162,7 +186,7 @@ void spawn_food()
 	{
 		state.food.x = get_random_number()%DISP_W;
 		state.food.y = get_random_number()%DISP_H;
-		
+
 		state.food.valid = 1;
 		for(unsigned i = 0; i < state.length; i++)
 		{
@@ -176,6 +200,12 @@ void spawn_food()
 
 void think()
 {
+	// intention
+	state.nextDirection = state.direction;
+	
+	if(get_random_number() > 0xF5)
+			state.nextDirection = get_random_number() % 3;
+
 	if(state.food.valid)
 	{
 		int diffx = state.food.x - snake[0].x;
@@ -185,7 +215,6 @@ void think()
 		if(abs(diffx) > DISP_W/2)
 			diffx *= -1;
 
-		state.nextDirection = state.direction;
 		if(abs(diffx) > 0)
 		{
 			if(diffx > 0)
@@ -200,48 +229,81 @@ void think()
 			if(diffy > 0)
 				if(state.direction != up)
 					state.nextDirection = down;
+				else
+					state.nextDirection = left;
 			if(diffy < 0)
 				if(state.direction != down)
 					state.nextDirection = up;
+				
 		}
-		for(unsigned tries = 0; tries < 5; tries++)
-		{
-			int goingToHit = 0;
-			struct Snakesegment future = snake[0];
-			future.x += state.nextDirection == left ? -1 : state.nextDirection == right ? 1 : 0;
-			future.y += state.nextDirection == down ? 1 : state.nextDirection == up ? -1 : 0;
-			future.x %= DISP_W;
-			future.y %= DISP_H;
+	}
 
-			for(uint8_t i = 1; i < state.length; i++)
+	if(state.intelligent == i_drunk && get_random_number() > 0xF5)
+			state.nextDirection = get_random_number() % 3;
+
+	// collision avoidance
+	for(unsigned tries = 0; tries < 5; tries++)
+	{
+		unsigned goingToHit = 0;
+		struct Snakesegment future = snake[0];
+		future.x += state.nextDirection == left ? -1 : state.nextDirection == right ? 1 : 0;
+		future.y += state.nextDirection == down ? 1 : state.nextDirection == up ? -1 : 0;
+		future.x %= DISP_W;
+		future.y %= DISP_H;
+
+		for(uint16_t i = 1; i < state.length; i++)
+		{
+			if(snake[i].x == future.x && snake[i].y == future.y)
 			{
-				if(snake[i].x == future.x && snake[i].y == future.y)
-				{
-					goingToHit = 1;
-					break;
+				goingToHit = 1;
+				printf("going to hit segment %i\n", i);
+				if(tries == 0){
+					int segment_diffx = snake[i-1].x - snake[i].x;
+					int segment_diffy = snake[i-1].y - snake[i].y;
+					if(abs(segment_diffx) > 1)
+						segment_diffx *= -1;
+					if(abs(segment_diffy) > 1)
+						segment_diffy *= -1;
+
+					if(segment_diffx > 0){
+						state.nextDirection = left;
+					} else if (segment_diffx < 0){
+						state.nextDirection = right;
+					} else if (segment_diffy > 0){
+						state.nextDirection = up;
+					} else if (segment_diffy < 0){
+						state.nextDirection = down;
+					} else {
+						printf("Colliding segment direction unknown!?\n");
+						state.nextDirection++; state.nextDirection %= 4;
+					}
+				} else {
+					if(state.intelligent == i_safe)
+						state.nextDirection += 1;
+					else if(state.intelligent == i_bold || state.intelligent == i_drunk)
+						state.nextDirection += 3;
+					else {
+						printf("Snake is of unknown intelligence.");
+						state.nextDirection += 1;
+					}
+					state.nextDirection %= 4;
+					printf("Avoidance heuristic fails, guessing dir %i\n", state.nextDirection);
 				}
-			}
-			if(goingToHit)
-			{
-				//printf("Direction %d at try %d is not ok\n", state.nextDirection, tries);
-				state.nextDirection++;
-				state.nextDirection = state.nextDirection%4;
-			}
-			else
-			{
-				//printf("Direction %d at try %d is     ok\n", state.nextDirection, tries);
 				break;
 			}
 		}
+		if(!goingToHit)
+			break;
 	}
 }
 
 void reset_state()
 {
+	static unsigned num_resets = 0;
 	state.direction = left;
 	state.nextDirection = left;
 	state.length = 10;
-	state.intelligent = 0;
+	state.intelligent = 1 + (num_resets % (i_num-1));
 	spawn_food();
 	memset(snake, 0, sizeof(struct Snakesegment) * MAX_SNAKE_LENGTH);
 	for(unsigned i = 0; i < state.length; i++)
@@ -251,6 +313,9 @@ void reset_state()
 		fb_set_pixel(snake[i].x, snake[i].y, 1);
 	}
 	fb_flush();
+	printf("Switched snake intelligence to %s\n",
+	       intelligence_names[state.intelligent]);
+	num_resets++;
 }
 
 uint8_t snake_step()
@@ -291,7 +356,7 @@ uint8_t snake_step()
 		{
 			//we snake. we schlängel. we eat.
 			state.food.valid = 0;
-			state.length++;		//this may read off-by-one in snake array.
+			state.length++;		//this may read off-by-one in snake array at long lengths.
 			food_consumed = 1;
 		}
 	}
@@ -317,8 +382,9 @@ void delayDifficulty()
 	//Progress from 1 to 0
 	float progress = ((float)(MAX_SNAKE_LENGTH - state.length))/MAX_SNAKE_LENGTH;
 	if(state.intelligent)
-		progress /= 2;
-	sleep(1 + progress * MAX_DELAY);
+		progress /= 4;	// I am speed
+	if(!nodelay)
+		sleep(1 + progress * MAX_DELAY);
 }
 
 
@@ -346,22 +412,25 @@ int main (void)
 		while(snake_step() && state.length < MAX_SNAKE_LENGTH)
 		{
 			delayDifficulty();
-			if(!state.food.valid && (get_random_number() > 0x0F))
+			if(!state.food.valid && (get_random_number() > 0xEF))
 			{
 				spawn_food();
+				printf("Current Score: %i\n", state.length);
 			}
 			if(state.intelligent)
 				think();
 		}
-		fadeOut(1000);
+		fadeOut(2000);
 		oled_clear();
 		setContrast(255);
 
 		printText("\n    GAME OVER\n");
 		uint8_t buf[5];
 		printText("\nScore: ");
-		sprintf(buf, "%04u", state.length);
+		sprintf(buf, "%04u\n\n", state.length);
 		printText(buf);
+		printText(intelligence_names[state.intelligent]);
+		printText(" Snake");
 		sleep(5000);
 
 		cls();
