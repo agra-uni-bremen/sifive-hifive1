@@ -95,6 +95,6 @@ pc = 20401428
 num-instr = 79390408
 could not write answer
 
-real	0m28.389s
-user	0m27.988s
-sys	0m0.312s
+real	0m28.654s
+user	0m27.864s
+sys	0m0.356s
