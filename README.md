@@ -2,9 +2,11 @@ How to build bare metal applications on HiFive1-Board
 =====================================================
 
 This Repository contains some software examples for use with the HiFive1-Board of SiFive and our binary-compatible [Riscv-VP](systemc-verification.org/riscv-vp) ([repo](https://github.com/agra-uni-bremen/riscv-vp)).
-Here, an old version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-sdk) of SiFive is pinned and used for buildin/uploading programs.
+Here, an *old* version of the [freedom-e-sdk](https://github.com/sifive/freedom-e-sdk) of SiFive is pinned and used for building/uploading programs.
 
-1) Prerequisites on ubuntu (see *https://github.com/sifive/freedom-e-sdk*):
+The main idea of this repo is to build small and easy bare metal programs to be used in conjunction with the `vp-breadboard` which is a breadboard/pcb simulator with some buttons, oled display and leds. It is to be found in the `riscv-vp` repo under `env/hifive/vp-breadboard` and can be opened before calling any of the `make sim-*` targets.
+
+1) Prerequisites on ubuntu (see needed packages at *https://github.com/sifive/freedom-e-sdk/tree/baeeb8f*):
 
 	`sudo apt-get install autoconf automake libmpc-dev libmpfr-dev libgmp-dev gawk bison flex texinfo libtool libusb-1.0-0-dev make g++ pkg-config libexpat1-dev zlib1g-dev`
 
