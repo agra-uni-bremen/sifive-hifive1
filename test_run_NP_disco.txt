@@ -1,5 +1,5 @@
 
-        SystemC 2.3.3-Accellera --- Apr 19 2022 16:56:02
+        SystemC 2.3.3-Accellera --- Apr 28 2022 17:17:09
         Copyright (c) 1996-2018 by all Contributors,
         ALL RIGHTS RESERVED
 core freq at 1776025 Hz
@@ -56,7 +56,7 @@ core freq at 1776025 Hz
 
 Info: /OSCI/SystemC: Simulation stopped by user.
 =[ core : 0 ]===========================
-simulation time: 2699239960 ns
+simulation time: 2699281900 ns
 zero (x0) =        0
 ra   (x1) = 20401416
 sp   (x2) = 80003fb0
@@ -90,8 +90,8 @@ t4  (x29) = 7a220604
 t5  (x30) =    87305
 t6  (x31) =     73a3
 pc = 20401428
-num-instr = 79390667
+num-instr = 79391861
 
-real	0m28.240s
-user	0m29.727s
-sys	0m0.368s
+real	0m26.940s
+user	0m28.185s
+sys	0m0.248s

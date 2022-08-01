@@ -1,5 +1,5 @@
 
-        SystemC 2.3.3-Accellera --- Apr 19 2022 16:56:02
+        SystemC 2.3.3-Accellera --- Apr 28 2022 17:17:09
         Copyright (c) 1996-2018 by all Contributors,
         ALL RIGHTS RESERVED
 [hifive_main] using internal SS1106 oled controller on SPI CS 2 (with DC as Pin 16, Bit 10)
@@ -57,7 +57,7 @@ core freq at 1776025 Hz
 
 Info: /OSCI/SystemC: Simulation stopped by user.
 =[ core : 0 ]===========================
-simulation time: 2699232710 ns
+simulation time: 2699231880 ns
 zero (x0) =        0
 ra   (x1) = 20401416
 sp   (x2) = 80003fb0
@@ -91,9 +91,9 @@ t4  (x29) = 7a220604
 t5  (x30) =    87305
 t6  (x31) =     73a3
 pc = 20401428
-num-instr = 79390462
+num-instr = 79390434
 could not write answer
 
-real	0m28.289s
-user	0m28.188s
-sys	0m0.188s
+real	0m27.936s
+user	0m27.784s
+sys	0m0.104s

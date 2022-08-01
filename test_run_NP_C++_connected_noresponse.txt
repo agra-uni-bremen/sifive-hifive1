@@ -2,7 +2,8 @@
         SystemC 2.3.3-Accellera --- Apr 28 2022 17:17:09
         Copyright (c) 1996-2018 by all Contributors,
         ALL RIGHTS RESERVED
-[hifive_main] using internal SS1106 oled controller on SPI CS 2 (with DC as Pin 16, Bit 10)
+[gpio-server] Started IOF channel type 1 on pin 9 with ID 0
+[gpio-server] Started IOF channel type 5 on pin 10 with ID 1
 core freq at 1776025 Hz
 Inited button 3
 Inited button 4
@@ -57,7 +58,7 @@ core freq at 1776025 Hz
 
 Info: /OSCI/SystemC: Simulation stopped by user.
 =[ core : 0 ]===========================
-simulation time: 2699285750 ns
+simulation time: 2699230820 ns
 zero (x0) =        0
 ra   (x1) = 20401416
 sp   (x2) = 80003fb0
@@ -91,8 +92,9 @@ t4  (x29) = 7a220604
 t5  (x30) =    87305
 t6  (x31) =     73a3
 pc = 20401428
-num-instr = 79391971
+num-instr = 79390408
+could not write answer
 
-real	0m27.658s
-user	0m27.576s
-sys	0m0.080s
+real	0m28.667s
+user	0m28.272s
+sys	0m0.336s
