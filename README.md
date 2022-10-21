@@ -15,10 +15,10 @@ The main idea of this repo is to build small and easy bare metal programs to be 
 	```bash
 	git clone https://github.com/agra-uni-bremen/sifive-hifive1
 	cd sifive-hifive1/freedom-e-sdk
-	git submodule update --init --recursive # may take a bit
+	git submodule update --init # may take a bit
 	```
 
-3) Either:
+3) **Either**:
     a) Download and unpack a pre-build *riscv-multilib* toolchain, e.g. available from:
 
 	http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
@@ -32,11 +32,12 @@ The main idea of this repo is to build small and easy bare metal programs to be 
 	export RISCV_PATH="/opt/riscv-multilib" #  you may add this line to your .bashrc
 	```
 
-    b) Or build the toolchain directly:
+    b) **Or** build the toolchain directly:
 
 	```bash
 	cd freedom-e-sdk
-	make riscv-gnu-toolchain -j$(nproc) # may take a bit
+	git submodule update --init --recursive # may take a bit
+	make riscv-gnu-toolchain -j$(nproc) # may also take a bit
 	```
 
 4) Build openocd (if you want to load a program on the real board) in *sifive--hifive1/freedom-e-sdk/*:
