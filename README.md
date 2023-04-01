@@ -19,7 +19,8 @@ The main idea of this repo is to build small and easy bare metal programs to be 
 	```
 
 3) **Either**:
-    a) Download and unpack a pre-build *riscv-multilib* toolchain, e.g. available from:
+    a) ~~Download and unpack a pre-build *riscv-multilib* toolchain, e.g. available from:~~
+         *Not recommended anymore, please refer to b)*
 
 	http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
 	And make sure that the env variable RISCV_PATH is pointing to your toolchain-dir (without `/bin`)
