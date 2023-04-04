@@ -19,30 +19,35 @@ The main idea of this repo is to build small and easy bare metal programs to be 
 	```
 
 3) **Either**:
-    a) ~~Download and unpack a pre-build *riscv-multilib* toolchain, e.g. available from:~~
-         *Not recommended anymore, please refer to b)*
 
-	http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
-	And make sure that the env variable RISCV_PATH is pointing to your toolchain-dir (without `/bin`)
-	
-	example:
-	```bash
-	wget http://satisfy.informatik.uni-bremen.de/gnu-toolchain_riscv-multilib/latest-gnu-toolchain_riscv-multilib.tar.gz
-	tar xzf latest-gnu-toolchain_riscv-multilib.tar.gz
-	sudo mv riscv-multilib /opt
-	export RISCV_PATH="/opt/riscv-multilib" #  you may add this line to your .bashrc
+    a)
+    	If you would like to avoid compiling the tools from source, they are available as pre-built binaries from
+	https://www.sifive.com/products/tools
+
+	For OpenOCD and/or RISC-V GNU Toolchain,
+	download the .tar.gz for your platform, and unpack it to
+	your desired location. Then, use the `RISCV_PATH` and `RISCV_OPENOCD_PATH`
+	variables when attempting to use the tools:
+
+	```
+	cp openocd-<date>-<platform>.tar.gz /my/desired/location/
+	cp riscv64-unknown-elf-gcc-<date>-<platform>.tar.gz /my/desired/location
+	cd /my/desired/location
+	tar -xvf openocd-<date>-<platform>.tar.gz
+	tar -xvf riscv64-unknown-elf-gcc-<date>-<platform>.tar.gz
+	export RISCV_OPENOCD_PATH=/my/desired/location/openocd
+	export RISCV_PATH=/my/desired/location/riscv64-unknown-elf-gcc-<date>-<version>
 	```
 
-    b) **Or** build the toolchain directly:
+    b)
+    	**Or** build the toolchain directly. This may or may not work with the old pin of the toolchain. If the following does not work, please refer to https://github.com/sifive/freedom-tools.
 
 	```bash
 	cd freedom-e-sdk
 	git submodule update --init --recursive # may take a bit
 	make riscv-gnu-toolchain -j$(nproc) # may also take a bit
 	```
-
-4) Build openocd (if you want to load a program on the real board) in *sifive--hifive1/freedom-e-sdk/*:
-
+	Build openocd (if you want to load a program on the real board) in *sifive--hifive1/freedom-e-sdk/*:
 	`make openocd # need only to be done once`
 
 
